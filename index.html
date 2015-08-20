@@ -1,0 +1,81 @@
+<style>
+table{width:100%;text-align:center;}
+td{background-color:#ccc;padding:2em;}
+td.mid{width:5px;background-color:black;padding:0;}
+td b{font-size:2em;}
+td.buzzed{background-color:#ffc;}
+td.correct{background-color:#ffc;}
+td.incorrect{background-color:#ffc;}
+</style>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<table id="buttons"></table>
+
+<script>
+var gamestates = [
+	"tossup",
+	"buzzing",
+	"correct","wrong","blurt","interrupt correct","interrupt wrong",
+	"",
+];
+//var buzzesAllowed
+//freeForAll?
+var positions = ["Player 1","Captain","Player 2","Player 3","Player 4"];
+var teams = ["gfdsa","hjkl;"]; //Standard 5v5 - indices correspond with var positions
+var maintable = document.getElementById("buttons");
+var buzzed = false;
+(function(){
+	for(var t = 0; t < teams.length; t++){
+		if(t%2 == 0){
+			var row = document.createElement("tr");
+			for(var i = teams[t].length - 1; i >= 0; i--){
+				var player = document.createElement("td");
+				player.innerHTML = "<b>"+teams[t][i]+"</b><br>"+positions[i];
+				player.id = "t"+t+"p"+i;
+				row.appendChild(player);
+			}
+			maintable.appendChild(row);
+		}
+		else{
+			var rows = maintable.getElementsByTagName("tr");
+			var row = rows[rows.length-1];
+			var mid = document.createElement("td");
+			mid.className="mid";
+			row.appendChild(mid);
+			for(var i = 0; i < teams[t].length; i++){
+				var player = document.createElement("td");
+				player.innerHTML = "<b>"+teams[t][i]+"</b><br>"+positions[i];
+				player.id = "t"+t+"p"+i;
+				row.appendChild(player);
+			}
+		}
+	}
+})();
+window.onkeypress=function(e){
+	if(!e)var e=window.event;
+	if(e.keyCode == 32){//space resets
+		buzzed = false;
+		document.getElementsByClassName("buzzed")[0].className="";
+	}
+	console.log(e);
+	if(buzzed === true){
+		if(e.keyCode == 13){
+			
+		}
+	}
+	if(buzzed === false){
+		for(var t = 0; t < teams.length; t++)
+			for(var i = 0; i < teams[t].length; i++)
+				if(e.keyCode == teams[t].charCodeAt(i)){
+					console.log("Team "+(t+1)+", "+positions[i]);
+					document.getElementById("t"+t+"p"+i).className = "buzzed";
+					buzzed = true;
+				}
+	}
+}
+</script>
