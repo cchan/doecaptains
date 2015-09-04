@@ -14,21 +14,154 @@ td.incorrect{background-color:#ffc;}
 <br>
 <br>
 <br>
-<table id="buttons"></table>
+<div>Question History Display <!--Here is an editable display of all the questions that have been read so far. Who(s) buzzed, what they(s) did, bonus, etc. -->
+							<!--Though we love the new input system, you will always be able to enter data this way too. 
+								THE NEW INPUT SYSTEM SHOULD JUST BE A LAYER OVER THIS DROPDOWN-BOX SYSTEM.-->
+</div>
+<div class="team"></div><div class="player"></div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script>
-var gamestates = [
-	"tossup",
-	"buzzing",
-	"correct","wrong","blurt","interrupt correct","interrupt wrong",
-	"",
+//Use JSON cookie storage. https://github.com/samyk/evercookie :D
+//And always be sending stuff back to the server, every question and every direct-edit.
+
+
+//backspace goes back
+//5v5 for normal and freeforall mode for speed rounds (don't bother with the complex stuff)
+
+
+var keyBindings = {};
+function bindKeyToPlayer(key, player){
+	keyBindings[key] = player;
+}
+$(window).keyPress(function(e){
+	if(e.which == 32);
+	else if(e.which == 13);
+	else{
+		var ch = String.fromCharCode(e.which);
+	}
+});
+
+function Player(){
+	
+}
+function Team(name,players){
+	this.name = name;
+	this.points = 0;
+	this.players = players;
+	this.buzzingAllowed = true;
+	this.reset = function(){
+		this.buzzingAllowed = true;
+		
+	};
+	this.buzz = function(key){
+		for(var i = 0; i < players.length; i++)
+			if(players[i].key == key)return i;
+		return -1;
+	};
+}
+
+var NormalGame = { //Point values and everything should be here
+	"start": function(key){
+		if(key=="space")return "tossup";
+		else return false;
+	},
+	"tossup": function(key){
+		//key will be a s d f j k l ;
+	},
+	"interrupting": function(key){
+		for(var i = 0; i < teams.length; i++){
+			var index = teams[i].buzz(key);
+			if(index !== -1)
+				
+		}
+	},
+	"regular buzzing": function(key){
+	
+	},
+};
+
+
+var teams = [
+	new Team("A Team",[
+		{
+			person:{
+				id:123,
+				name:"Aiyappa Kodendera",
+			},
+			key:"a",
+			title:"Player 3",
+		},
+		{
+			person:{
+				id:41,
+				name:"Catherine Wang",
+			},
+			key:"s",
+			title:"Player 2",
+		},
+		{
+			person:{
+				id:443,
+				name:"Eric Xia",
+			},
+			key:"d",
+			title:"Captain",
+		},
+		{
+			person:{
+				id:0,
+				name:"Clive Chan",
+			},
+			key:"f",
+			title:"Player 1",
+		},
+	]),
+	new Team("B Team",[
+		{
+			person:{
+				id:723,
+				name:"AK",
+			},
+			key:"a",
+			title:"Player 1",
+		},
+		{
+			person:{
+				id:552,
+				name:"CW",
+			},
+			key:"s",
+			title:"Captain",
+		},
+		{
+			person:{
+				id:989,
+				name:"EX",
+			},
+			key:"d",
+			title:"Player 2",
+		},
+		{
+			person:{
+				id:34,
+				name:"CC",
+			},
+			key:"f",
+			title:"Player 3",
+		},
+	]),
 ];
+
+for()
+$("#buttons");
+
 //var buzzesAllowed
 //freeForAll?
-var positions = ["Player 1","Captain","Player 2","Player 3","Player 4"];
-var teams = ["gfdsa","hjkl;"]; //Standard 5v5 - indices correspond with var positions
+//var positions = ["Player 1","Captain","Player 2","Player 3","Player 4"];
+//var teams = ["gfdsa","hjkl;"]; //Standard 5v5 - indices correspond with var positions
+//var teams = ["a","s","d","f","g","h","j","k","l",";"];
 var maintable = document.getElementById("buttons");
-var buzzed = false;
 (function(){
 	for(var t = 0; t < teams.length; t++){
 		if(t%2 == 0){
