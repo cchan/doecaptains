@@ -8,22 +8,106 @@
     //https://www.firebase.com/docs/web/libraries/angular/quickstart.html
     var app = angular.module("DOECaptainsApp", ["firebase","ngCookies"]);
     
-    app.controller("DOECaptainsController", function($scope, $firebaseObject) {
-      var rounddata = new Firebase("https://doecaptains.firebaseio.com/rounds");
-      $scope.round = $firebaseObject(rounddata.push({teams:["a"]}));//.$bindTo($scope,$scope.round);
-      $scope.save = function(){
-        $scope.round.$save();
-      };
-      $scope.newteam = function(teams){
-        console.log($scope.round.teams);
-        teams["New Team "+Math.floor(Math.random()*10000)]=[
-          {id:0,pos:"Player"}
+    app.factory("Round", ["$firebaseObject",
+      function($firebaseObject) {
+        return function(id) {
+          // create a reference to the database where we will store our data
+          var randomRoomId = Math.round(Math.random() * 100000000);
+          var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
+          var rounddata;
+          if(id !== undefined)
+            rounddata = rounds.child(id);
+          else
+            rounddata = rounds.push();
+          
+          // return it as a synchronized object
+          return $firebaseObject(rounddata);
+        }
+      }
+    ]);
+    
+    app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
+      function($scope, Round, $firebaseArray) {
+        Round("-JycZMeHSGYHUyS4uygB").$bindTo($scope,"round");
+        $scope.newteam = function(){
+          if($scope.round.teams === undefined)$scope.round.teams = {};
+          $scope.round.teams["Team "+Math.floor(Math.random()*1000)]
+            = [{id:0,pos:"Player ?",name:"Someone"}];
+        };
+        $scope.newquestion = function(){
+          if($scope.round.questions === undefined)$scope.round.questions = [];
+          var len = $scope.round.questions.length;
+          console.log(len);
+          $scope.round.questions[len]={};
+        };
+        
+        $scope.regularroundteams = [ //Should never edit indices... change this.
+          {
+            name: "Team 1",
+            players:[
+              {pos:"Player 1",name:"Someone"},
+              {pos:"Captain",name:"Someone"},
+              {pos:"Player 2",name:"Someone"},
+              {pos:"Player 3",name:"Someone"},
+              {pos:"Player 4",name:"Someone"},
+            ],
+          },
+          {
+            name: "Team 2",
+            players:[
+              {pos:"Player 1",name:"Someone"},
+              {pos:"Captain",name:"Someone"},
+              {pos:"Player 2",name:"Someone"},
+              {pos:"Player 3",name:"Someone"},
+              {pos:"Player 4",name:"Someone"},
+            ],
+          },
         ];
-      };
-      
-      var memberdata = new Firebase("https://doecaptains.firebaseio.com/members");
-      $scope.members = $firebaseObject(memberdata);
-    });
+        $scope.speedroundteams = [
+          {
+            name: "Team 1",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 2",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 3",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 4",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 5",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 6",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 7",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 8",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 9",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+          {
+            name: "Team 10",
+            players:[{pos:"Player",name:"Someone"}],
+          },
+        ];
+        $scope.members = $firebaseArray(new Firebase("https://doecaptains.firebaseio.com/members"));
+      }
+    ]);
     </script>
     <style>
       table{width:100%;text-align:center;}
@@ -42,20 +126,38 @@
       <div>Details: <textarea ng-model="round.details"></textarea></div>
       <div>Round: <input ng-model="round.round"></div>
       <div>Teams:
-        <div><button ng-click="newteam(round.teams)">Add Team</button></div>
-        <div ng-repeat="(teamname,team) in round.teams">
-          <input ng-model="teamname" />
-          <div ng-repeat="(orderpos,player) in team">
-            {{orderpos}} <input ng-model="player.pos" />: <select ng-model="player.name"><option ng-repeat="(id,memberdata) in members" value="{{id}}">{{memberdata.name}}</option></select>
+        <div>
+          <button ng-click="round.teams = regularroundteams">Set up Blank Regular Round</button>
+          <button ng-click="round.teams = speedroundteams">Set up Blank Speed Round</button>
+          <button ng-click="newteam()">Add Team</button>
+        </div>
+        <div ng-repeat="team in round.teams">
+          <input ng-model="team.name" />
+          <div ng-repeat="player in team.players">
+            {{player.pos}}:
+            <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members"><option></option></select>
           </div>
         </div>
       </div>
     </div>
     <div id="qhistorydisplay">
-    <!--Here is an editable display of all the questions that have been read so far. Who(s) buzzed, what they(s) did, bonus, etc. -->
-    <!--Though we love the new input system, you will always be able to enter data this way too. 
+      <!--Here is an editable display of all the questions that have been read so far. Who(s) buzzed, what they(s) did, bonus, etc. -->
+      <!--Though we love the new input system, you will always be able to enter data this way too. 
       THE NEW INPUT SYSTEM SHOULD JUST BE A LAYER OVER THIS DROPDOWN-BOX SYSTEM.-->
-    
+      <button ng-click="newquestion()">New Question</button>
+      <div ng-repeat="question in round.questions">
+        TOSS-UP
+        <select ng-model="question.subject"><option value="" selected>SUBJECT?</option><option>BIO</option><option>CHEM</option><option>PHYS</option><option>MATH</option><option>ESS</option></select>:
+        <select ng-model="question.buzz1.who"><option value="" selected>BUZZ 1?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+        <select ng-model="question.buzz1.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+        <select ng-model="question.buzz1.response"><option value="" selected>RESPONSE?</option><option value="1">Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+        <span ng-show="question.buzz1.response !== undefined && question.buzz1.response !== '' && question.buzz1.response !== 'Correct'">
+          <select ng-model="question.buzz2.who"><option value="" selected>BUZZ 2?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+          <select ng-model="question.buzz2.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+          <select ng-model="question.buzz2.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+        </span>
+        <select ng-show="question.buzz1.response==='Correct' || question.buzz2.response==='Correct'"><option value="" selected>BONUS?</option><option>Correct</option><option>Incorrect</option></select>
+      </div>
     </div>
     <div id="teamdisplay">
     </div>
