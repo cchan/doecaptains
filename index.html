@@ -5,6 +5,15 @@
     <script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
     <script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
     <script>
+    //http://papermashup.com/read-url-get-variables-withjavascript/
+    function getUrlVars() {
+      var vars = {};
+      var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+      });
+      return vars;
+    }
+    
     //https://www.firebase.com/docs/web/libraries/angular/quickstart.html
     var app = angular.module("DOECaptainsApp", ["firebase","ngCookies"]);
     
@@ -28,27 +37,43 @@
     
     app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
       function($scope, Round, $firebaseArray) {
-        Round("-JycZMeHSGYHUyS4uygB").$bindTo($scope,"round");
-        $scope.newteam = function(){
-          if($scope.round.teams === undefined)$scope.round.teams = {};
-          $scope.round.teams.push({
-            name:"Team X",
-            players:[{id:0,pos:"Player ?",name:"Someone"}],
-          });
-        };
-        $scope.newplayer = function(){
-          if($scope.round.teams === undefined)$scope.round.teams = {};
-          $scope.round.teams["Team "+Math.floor(Math.random()*1000)]
-            = [{id:0,pos:"Player ?",name:"Someone"}];
+        var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
+        $scope.availableRounds = $firebaseArray(rounds);
+        $scope.unbindRound = function(){};
+        
+        if(getUrlVars().hasOwnProperty("roundID"))
+          $scope.loadRound(getUrlVars()["roundID"]);
+        
+        $scope.loadRound = function(roundID){
+          $scope.unbindRound();
+          if(roundID!==undefined && roundID!=="")
+            $scope.roundID = roundID;
+          if($scope.roundID!==undefined && $scope.roundID!==""){
+            Round($scope.roundID).$bindTo($scope,"round").then(function(unbind){
+              $scope.unbindRound = unbind;
+            });
+          }
+          else{
+            Round().$bindTo($scope,"round").then(function(unbind){
+              $scope.roundID = $scope.round.$id;
+              $scope.round = $scope.blankround();
+              $scope.round.$id = $scope.roundID;
+              $scope.unbindRound = unbind;
+            });
+          }
         };
         
-        $scope.newquestion = function(){
-          if($scope.round.questions === undefined)
-            $scope.round.questions = [];
-          var len = $scope.round.questions.length;
-          console.log(len);
-          $scope.round.questions[len]={};
-        };
+        $scope.blankplayer = function(){return {pos:"Player",name:"Someone"};};
+        $scope.blankteam = function(){return {name:"Team X",players:[$scope.blankplayer()]};};
+        $scope.blankquestion = function(){return {};};
+        $scope.blankround = function(){return {
+          name:"Unnamed Round",
+          date:"[MM/DD/YY]",
+          round:"Some Round From Somewhere Of Some Year",
+          detail:"",
+          teams: [$scope.blankteam,$scope.blankteam],
+          questions:[],
+        }};
         
         $scope.reset = function(){
           if(confirm("Are you sure you want to clear everything about this round?")){
@@ -135,51 +160,61 @@
       td.buzzed{background-color:#ffc;}
       td.correct{background-color:#ffc;}
       td.incorrect{background-color:#ffc;}
+      
+      .teamname{font-size: 1.3em; font-weight: bold; margin-top: 1em;}
+      .playerpos{font-weight: bold; display: inline;}
     </style>
   </head>
   <body ng-controller="DOECaptainsController as dq">
-    <div id="roundsettings">
+    <div id="round">
       <h2>Round</h2>
-      <div>ID: <span ng-bind="round.$id">LOADING &gt; &gt; &gt; &gt; &gt;</span></div>
-      <div>Name: <input ng-model="round.name"></div>
-      <div>Additional Details: <br><textarea ng-model="round.details"></textarea></div>
-      <div>Round Read: <input ng-model="round.round"></div>
-      <div>
-        <h2>Teams</h2>
+      <div><select ng-model="roundID" ng-options="round.$id as round.name for round in availableRounds"><option value="">NEW ROUND</option></select><button ng-click="loadRound()">Load Round</button></div>
+      <br><br>
+      <div ng-show="round !== undefined" class=".ng-hide">
+        <div><b>ID:</b> <span ng-bind="round.$id">LOADING . . . . .</span></div>
+        <div><b>Round Name:</b> <input ng-model="round.name"/></div>
+        <div><b>Date:</b> <input ng-model="round.date"/></div>
+        <div><b>Which Round Read:</b> <input ng-model="round.round"></div>
+        <div><b>Additional Details?</b> <br><textarea ng-model="round.details"></textarea></div>
         <div>
-          <button ng-click="reset() && (round.teams = regularroundteams)">Set up Blank Regular Round</button>
-          <button ng-click="reset() && (round.teams = speedroundteams)">Set up Blank Speed Round</button>
-          <button ng-click="newteam()">Add Team</button>
-        </div>
-        <div ng-repeat="team in round.teams">
-          <input ng-model="team.name" />
-          <div ng-repeat="player in team.players">
-            {{player.pos}}:
-            <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members"><option></option></select>
+          <h2>Teams</h2>
+          <div>
+            <button ng-click="reset() && (round.teams = regularroundteams)">Set up Blank Regular Round</button>
+            <button ng-click="reset() && (round.teams = speedroundteams)">Set up Blank Speed Round</button>
+          </div>
+          <div ng-repeat="team in round.teams track by $index">
+            <input ng-model="team.name" class="teamname" />
+            <div ng-repeat="(ind,player) in team.players track by $index">
+              <input ng-model="player.pos" class="playerpos" />:
+              <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members track by $index"><option></option></select>
+              <button ng-click="team.players.splice(ind,1)">x</button>
+            </div>
+            <button ng-click="team.players.push(blankplayer())">+</button>
           </div>
         </div>
+        <br><button ng-click="round.teams.push(blankteam())">Add Team</button>
+        <div id="qhistorydisplay">
+          <h2>Questions</h2>
+          <!--Here is an editable display of all the questions that have been read so far. Who(s) buzzed, what they(s) did, bonus, etc. -->
+          <!--Though we love the new input system, you will always be able to enter data this way too. 
+          THE NEW INPUT SYSTEM SHOULD JUST BE A LAYER OVER THIS DROPDOWN-BOX SYSTEM.-->
+          <div ng-repeat="(ind,question) in round.questions">
+            TOSS-UP
+            <select ng-model="question.subject"><option value="" selected>SUBJECT?</option><option>BIO</option><option>CHEM</option><option>PHYS</option><option>MATH</option><option>ESS</option></select>:
+            <select ng-model="question.buzz1.who"><option value="" selected>BUZZ 1?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+            <select ng-model="question.buzz1.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+            <select ng-model="question.buzz1.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+            <span ng-show="question.buzz1.response === 'Incorrect' || question.buzz1.response === 'Blurt' || question.buzz1.response === 'Stall'">
+              <select ng-model="question.buzz2.who"><option value="" selected>BUZZ 2?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+              <select ng-model="question.buzz2.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+              <select ng-model="question.buzz2.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+            </span>
+            <select ng-model="question.bonus" ng-show="question.buzz1.response==='Correct' || question.buzz2.response==='Correct'"><option value="" selected>BONUS?</option><option>Correct</option><option>Incorrect</option></select>
+            <button ng-click="round.questions.splice(ind,1)">x</button>
+          </div>
+          <button ng-click="round.questions.push(blankquestion())">New Question</button>
+        </div>
       </div>
-    </div>
-    <div id="qhistorydisplay">
-      <h2>Questions</h2>
-      <!--Here is an editable display of all the questions that have been read so far. Who(s) buzzed, what they(s) did, bonus, etc. -->
-      <!--Though we love the new input system, you will always be able to enter data this way too. 
-      THE NEW INPUT SYSTEM SHOULD JUST BE A LAYER OVER THIS DROPDOWN-BOX SYSTEM.-->
-      <div ng-repeat="(ind,question) in round.questions">
-        TOSS-UP
-        <select ng-model="question.subject"><option value="" selected>SUBJECT?</option><option>BIO</option><option>CHEM</option><option>PHYS</option><option>MATH</option><option>ESS</option></select>:
-        <select ng-model="question.buzz1.who"><option value="" selected>BUZZ 1?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
-        <select ng-model="question.buzz1.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
-        <select ng-model="question.buzz1.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
-        <span ng-show="question.buzz1.response === 'Incorrect' || question.buzz1.response === 'Blurt' || question.buzz1.response === 'Stall'">
-          <select ng-model="question.buzz2.who"><option value="" selected>BUZZ 2?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
-          <select ng-model="question.buzz2.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
-          <select ng-model="question.buzz2.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
-        </span>
-        <select ng-model="question.bonus" ng-show="question.buzz1.response==='Correct' || question.buzz2.response==='Correct'"><option value="" selected>BONUS?</option><option>Correct</option><option>Incorrect</option></select>
-        <button ng-click="round.questions.splice(ind,1)">x</button>
-      </div>
-      <button ng-click="newquestion()">New Question</button>
     </div>
     <div id="teamdisplay">
     </div>
