@@ -24,7 +24,7 @@
           var randomRoomId = Math.round(Math.random() * 100000000);
           var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
           var rounddata;
-          if(id !== undefined)
+          if(id !== undefined && id !== null)
             rounddata = rounds.child(id);
           else
             rounddata = rounds.push();
@@ -37,6 +37,10 @@
     
     app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
       function($scope, Round, $firebaseArray) {
+        var date = new Date();
+        var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        $scope.date = date.getDate()+"-"+monthNames[date.getMonth()]+"-"+date.getFullYear();
+        
         var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
         $scope.availableRounds = $firebaseArray(rounds);
         $scope.unbindRound = function(){};
@@ -44,23 +48,21 @@
         if(getUrlVars().hasOwnProperty("roundID"))
           $scope.loadRound(getUrlVars()["roundID"]);
         
+        $scope.newRound = function(){
+          Round().$bindTo($scope,"round").then(function(unbind){
+            $scope.roundID = $scope.round.$id;
+            $scope.round = $scope.blankround();
+            $scope.round.$id = $scope.roundID;
+            $scope.unbindRound = unbind;
+          });
+        }
         $scope.loadRound = function(roundID){
           $scope.unbindRound();
           if(roundID!==undefined && roundID!=="")
             $scope.roundID = roundID;
-          if($scope.roundID!==undefined && $scope.roundID!==""){
-            Round($scope.roundID).$bindTo($scope,"round").then(function(unbind){
-              $scope.unbindRound = unbind;
-            });
-          }
-          else{
-            Round().$bindTo($scope,"round").then(function(unbind){
-              $scope.roundID = $scope.round.$id;
-              $scope.round = $scope.blankround();
-              $scope.round.$id = $scope.roundID;
-              $scope.unbindRound = unbind;
-            });
-          }
+          Round($scope.roundID).$bindTo($scope,"round").then(function(unbind){
+            $scope.unbindRound = unbind;
+          });
         };
         
         $scope.blankplayer = function(){return {pos:"Player",name:"Someone"};};
@@ -166,9 +168,15 @@
     </style>
   </head>
   <body ng-controller="DOECaptainsController as dq">
+    <a href="https://doecaptains.firebaseio.com/.json?print=pretty&format=export&download=doecaptains-backup.{{date}}.json">Download Backup</a>
     <div id="round">
       <h2>Round</h2>
-      <div><select ng-model="roundID" ng-options="round.$id as round.name for round in availableRounds"><option value="">NEW ROUND</option></select><button ng-click="loadRound()">Load Round</button></div>
+      <div>
+        <select ng-model="roundID" 
+          ng-options="round.$id as round.name for round in availableRounds"
+          ng-change="loadRound()"></select>
+        <button ng-click="newRound()">Create New Round</button>
+      </div>
       <br><br>
       <div ng-show="round !== undefined" class=".ng-hide">
         <div><b>ID:</b> <span ng-bind="round.$id">LOADING . . . . .</span></div>
