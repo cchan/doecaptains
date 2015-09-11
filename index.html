@@ -21,9 +21,8 @@
       function($firebaseObject) {
         return function(id) {
           // create a reference to the database where we will store our data
-          var randomRoomId = Math.round(Math.random() * 100000000);
           var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
-          var rounddata;
+		  var rounddata;
           if(id !== undefined && id !== null)
             rounddata = rounds.child(id);
           else
@@ -42,12 +41,18 @@
         $scope.date = date.getDate()+"-"+monthNames[date.getMonth()]+"-"+date.getFullYear();
         
         var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
-        $scope.availableRounds = $firebaseArray(rounds);
+		$scope.availableRounds = $firebaseArray(rounds);
         
 		$scope.unbindRound = function(){};
         
         if(getUrlVars().hasOwnProperty("roundID"))
           $scope.loadRound(getUrlVars()["roundID"]);
+		
+		var connectedRef = new Firebase("https://doecaptains.firebaseio.com/.info/connected");
+		connectedRef.on("value", function(snap) {
+		  console.log("Connection state changed:"+(snap.val()?"true":"false"))
+		  $scope.connected = !!snap.val();
+		});
         
         $scope.newRound = function(){
           $scope.unbindRound();
@@ -56,7 +61,8 @@
             $scope.round = $scope.blankround();
             $scope.unbindRound = unbind;
 			
-			$scope.availableRounds = $firebaseArray(rounds);
+			var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
+		    $scope.availableRounds = $firebaseArray(rounds);
           });
         }
         $scope.loadRound = function(roundID){
@@ -171,17 +177,19 @@
     </style>
   </head>
   <body ng-controller="DOECaptainsController as dq">
+	<h1 style="margin:0;">Lexington DOE Tracker</h1>
+	<div style="font-weight:bold;"><span style="color:green" ng-show="connected" class="ng-hide">synchronized</span><span style="color:red" ng-hide="connected">disconnected</span></div>
     <a href="https://doecaptains.firebaseio.com/.json?print=pretty&format=export&download=doecaptains-backup.{{date}}.json">Download Backup</a>
     <div id="round">
-      <h2>Round</h2>
+      <h2>Round Select</h2>
       <div>
         <select ng-model="roundID" 
           ng-options="round.$id as round.name for round in availableRounds"
           ng-change="loadRound()"></select>
         <button ng-click="newRound()">Create New Round</button>
       </div>
-      <br><br>
-      <div ng-show="round !== undefined" class=".ng-hide">
+      <div ng-show="round !== undefined" class="ng-hide">
+		<h2>Round Info</h2>
         <div><b>ID:</b> <span ng-bind="round.$id">LOADING . . . . .</span></div>
         <div><b>Round Name:</b> <input ng-model="round.name"/></div>
         <div><b>Date:</b> <input ng-model="round.date"/></div>
