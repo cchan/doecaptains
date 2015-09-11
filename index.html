@@ -43,17 +43,20 @@
         
         var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
         $scope.availableRounds = $firebaseArray(rounds);
-        $scope.unbindRound = function(){};
+        
+		$scope.unbindRound = function(){};
         
         if(getUrlVars().hasOwnProperty("roundID"))
           $scope.loadRound(getUrlVars()["roundID"]);
         
         $scope.newRound = function(){
+          $scope.unbindRound();
           Round().$bindTo($scope,"round").then(function(unbind){
             $scope.roundID = $scope.round.$id;
             $scope.round = $scope.blankround();
-            $scope.round.$id = $scope.roundID;
             $scope.unbindRound = unbind;
+			
+			$scope.availableRounds = $firebaseArray(rounds);
           });
         }
         $scope.loadRound = function(roundID){
@@ -73,7 +76,7 @@
           date:"[MM/DD/YY]",
           round:"Some Round From Somewhere Of Some Year",
           detail:"",
-          teams: [$scope.blankteam,$scope.blankteam],
+          teams: [$scope.blankteam(),$scope.blankteam()],
           questions:[],
         }};
         
@@ -194,7 +197,7 @@
             <input ng-model="team.name" class="teamname" />
             <div ng-repeat="(ind,player) in team.players track by $index">
               <input ng-model="player.pos" class="playerpos" />:
-              <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members track by $index"><option></option></select>
+              <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members"><option></option></select>
               <button ng-click="team.players.splice(ind,1)">x</button>
             </div>
             <button ng-click="team.players.push(blankplayer())">+</button>
