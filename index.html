@@ -9,94 +9,91 @@
 	
 	<!--Here is an editable display of all the questions that have been read so far. Who(s) buzzed, what they(s) did, bonus, etc. -->
 	<!--Though we love the new input system, you will always be able to enter data this way too. 
-	THE NEW INPUT SYSTEM SHOULD JUST BE A LAYER OVER THIS DROPDOWN-BOX SYSTEM.-->
-		<!--Team switching-->
-		<!--Team-member mode, where you can't edit anything outside of the current round - just implement some sort of round-locking mechanism-->
+	THE NEW INPUT SYSTEM SHOULD JUST BE A LAYER OVER THIS DROPDOWN-BOX SYSTEM.
+		Team switching
+		Team-member mode, where you can't edit anything outside of the current round - just implement some sort of round-locking mechanism
+		test all features :/
+		test syncing for multiple editors, but shouldn't have to do that. Please. Ever. Implement locking?
+	-->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-cookies.min.js"></script>
     <script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
     <script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
     <script src="app.js"></script>
     <style>
-      table{width:100%;text-align:center;}
-      td{background-color:#ccc;padding:2em;}
-      td.mid{width:5px;background-color:black;padding:0;}
-      td b{font-size:2em;}
-      td.buzzed{background-color:#ffc;}
-      td.correct{background-color:#ffc;}
-      td.incorrect{background-color:#ffc;}
-      
       .teamname{font-size: 1.3em; font-weight: bold; margin-top: 1em;}
       .playerpos{font-weight: bold; display: inline;}
     </style>
   </head>
   <body ng-controller="DOECaptainsController as dq">
 	<h1 style="margin:0;">Lexington DOE Tracker</h1>
-	<div style="font-weight:bold; display:inline-block; position:fixed; top:2em; right: 2em; font-size:1.5em;"><span style="color:#f0f;background-color:#0f0;padding:0.5em;" ng-show="connected" class="ng-hide">synchronized</span><span style="color:#0ff;background-color:#f00;padding:0.5em;" ng-hide="connected">disconnected</span></div>
-    <a href="https://doecaptains.firebaseio.com/.json?print=pretty&format=export&download=doecaptains-backup.{{date}}.json">Download Backup</a>
-    <div id="round">
-      <h2>Round Select</h2>
-      <div>
-        <select ng-model="roundID" 
-          ng-options="round.$id as round.name for round in availableRounds"
-          ng-change="loadRound()"></select>
-        <button ng-click="newRound()">Create New Round</button>
-      </div>
-      <div ng-show="round !== undefined" class="ng-hide">
-		<h2>Round Info</h2>
-        <div><b>ID:</b> <span ng-bind="round.$id">LOADING . . . . .</span></div>
-        <div><b>Round Name:</b> <input ng-model="round.name"/></div>
-        <div><b>Date:</b> <input ng-model="round.date"/></div>
-        <div><b>Which Round Read:</b> <input ng-model="round.round"></div>
-        <div><b>Additional Details?</b> <br><textarea ng-model="round.details"></textarea></div>
-        <div>
-          <h2>Teams</h2>
-          <div>
-            <button ng-click="reset() && (round.teams = regularroundteams)">Set up Blank Regular Round</button>
-            <button ng-click="reset() && (round.teams = speedroundteams)">Set up Blank Speed Round</button>
-          </div>
-          <div ng-repeat="team in round.teams track by $index">
-            <input ng-model="team.name" class="teamname" />
-            <div ng-repeat="(ind,player) in team.players track by $index">
-              <input ng-model="player.pos" class="playerpos" />:
-              <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members"><option></option></select>
-              <button ng-click="team.players.splice(ind,1)">x</button>
-            </div>
-			<button ng-click="team.players.push(blankplayer())">+</button>
-          </div>
-        </div>
-        <br><button ng-click="round.teams.push(blankteam())">Add Team</button>
-		<div><b>Additional notes on team members' performance?</b> <br><textarea ng-model="round.notes"></textarea></div>
-        <div id="qhistorydisplay">
-          <h2>Questions</h2>
-          <div ng-repeat="(ind,question) in round.questions">
-            TOSS-UP
-            <select ng-model="question.subject"><option value="" selected>SUBJECT?</option><option>BIO</option><option>CHEM</option><option>PHYS</option><option>MATH</option><option>ESS</option></select>:
-            <select ng-model="question.buzz1.who"><option value="" selected>BUZZ 1?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
-            <select ng-model="question.buzz1.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
-            <select ng-model="question.buzz1.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
-            <span ng-show="question.buzz1.response === 'Incorrect' || question.buzz1.response === 'Blurt' || question.buzz1.response === 'Stall'">
-              <select ng-model="question.buzz2.who"><option value="" selected>BUZZ 2?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
-              <select ng-model="question.buzz2.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
-              <select ng-model="question.buzz2.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
-            </span>
-            <select ng-model="question.bonus" ng-show="question.buzz1.response==='Correct' || question.buzz2.response==='Correct'"><option value="" selected>BONUS?</option><option>Correct</option><option>Incorrect</option></select>
-            <button ng-click="round.questions.splice(ind,1)">x</button>
-          </div>
-          <button ng-click="round.questions.push(blankquestion())">New Question</button>
-        </div>
-      </div>
-    </div>
-    <div id="teamdisplay">
-    </div>
-
+	<label>hi log in pls<input type="password"></label>
+	
+	<div>
+		<div style="font-weight:bold; display:inline-block; position:fixed; top:2em; right: 2em; font-size:1.5em;"><span style="color:#f0f;background-color:#0f0;padding:0.5em;" ng-show="connected" class="ng-hide">synchronized</span><span style="color:#0ff;background-color:#f00;padding:0.5em;" ng-hide="connected">disconnected</span></div>
+		<a href="https://doecaptains.firebaseio.com/.json?print=pretty&format=export&download=doecaptains-backup.{{date}}.json">Download Backup</a>
+		<div id="round">
+		  <h2>Users</h2>
+			
+		  <h2>Round Select</h2>
+		  <div>
+			<select ng-model="roundID" 
+			  ng-options="round.$id as round.name for round in availableRounds"
+			  ng-change="loadRound()"></select>
+			<button ng-click="newRound()">Create New Round</button>
+		  </div>
+		  <div ng-show="round !== undefined" class="ng-hide">
+			<h2>Round Info</h2>
+			<div><b>ID:</b> <span ng-bind="round.$id">LOADING . . . . .</span></div>
+			<div><b>Round Name:</b> <input ng-model="round.name"/></div>
+			<div><b>Date:</b> <input ng-model="round.date"/></div>
+			<div><b>Which Round Read:</b> <input ng-model="round.round"></div>
+			<div><b>Additional Details?</b> <br><textarea ng-model="round.details"></textarea></div>
+			<div>
+			  <h2>Teams</h2>
+			  <div>
+				<button ng-click="reset() && (round.teams = regularroundteams)">Set up Blank Regular Round</button>
+				<button ng-click="reset() && (round.teams = speedroundteams)">Set up Blank Speed Round</button>
+			  </div>
+			  <div ng-repeat="team in round.teams track by $index">
+				<input ng-model="team.name" class="teamname" />
+				<div ng-repeat="(ind,player) in team.players track by $index">
+				  <input ng-model="player.pos" class="playerpos" />:
+				  <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members"><option></option></select>
+				  <button ng-click="team.players.splice(ind,1)">x</button>
+				</div>
+				<button ng-click="team.players.push(blankplayer())">+</button>
+			  </div>
+			</div>
+			<br><button ng-click="round.teams.push(blankteam())">Add Team</button>
+			<div><b>Additional notes on team members' performance?</b> <br><textarea ng-model="round.notes"></textarea></div>
+			<div id="qhistorydisplay">
+			  <h2>Questions</h2>
+			  <div ng-repeat="(ind,question) in round.questions">
+				TOSS-UP
+				<select ng-model="question.subject"><option value="" selected>SUBJECT?</option><option>BIO</option><option>CHEM</option><option>PHYS</option><option>MATH</option><option>ESS</option></select>:
+				<select ng-model="question.buzz1.who"><option value="" selected>BUZZ 1?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+				<select ng-model="question.buzz1.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+				<select ng-model="question.buzz1.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+				<span ng-show="question.buzz1.response === 'Incorrect' || question.buzz1.response === 'Blurt' || question.buzz1.response === 'Stall'">
+				  <select ng-model="question.buzz2.who"><option value="" selected>BUZZ 2?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+				  <select ng-model="question.buzz2.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+				  <select ng-model="question.buzz2.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+				</span>
+				<select ng-model="question.bonus" ng-show="question.buzz1.response==='Correct' || question.buzz2.response==='Correct'"><option value="" selected>BONUS?</option><option>Correct</option><option>Incorrect</option></select>
+				<button ng-click="round.questions.splice(ind,1)">x</button>
+			  </div>
+			  <button ng-click="round.questions.push(blankquestion())">New Question</button>
+			</div>
+		  </div>
+		</div>
+		<div id="teamdisplay">
+		</div>
+	</div>
+	
     <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script-->
 <script>
 /*
-    //Use JSON cookie storage. https://github.com/samyk/evercookie :D
-    //And always be sending stuff back to the server, every question and every direct-edit.
-
-
     //backspace goes back
     //5v5 for normal and freeforall mode for speed rounds (don't bother with the complex stuff)
     n1 vs n2 vs n3 vs n4 vs ... vs nm
@@ -152,81 +149,6 @@
       
       },
     };
-
-
-    var teams = [
-      new Team("A Team",[
-        {
-          person:{
-            id:123,
-            name:"Aiyappa Kodendera",
-          },
-          key:"a",
-          title:"Player 3",
-        },
-        {
-          person:{
-            id:41,
-            name:"Catherine Wang",
-          },
-          key:"s",
-          title:"Player 2",
-        },
-        {
-          person:{
-            id:443,
-            name:"Eric Xia",
-          },
-          key:"d",
-          title:"Captain",
-        },
-        {
-          person:{
-            id:0,
-            name:"Clive Chan",
-          },
-          key:"f",
-          title:"Player 1",
-        },
-      ]),
-      new Team("B Team",[
-        {
-          person:{
-            id:723,
-            name:"AK",
-          },
-          key:"a",
-          title:"Player 1",
-        },
-        {
-          person:{
-            id:552,
-            name:"CW",
-          },
-          key:"s",
-          title:"Captain",
-        },
-        {
-          person:{
-            id:989,
-            name:"EX",
-          },
-          key:"d",
-          title:"Player 2",
-        },
-        {
-          person:{
-            id:34,
-            name:"CC",
-          },
-          key:"f",
-          title:"Player 3",
-        },
-      ]),
-    ];
-
-    //for()
-    $("#buttons");
 
     //var buzzesAllowed
     //freeForAll?

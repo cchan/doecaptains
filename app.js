@@ -1,4 +1,11 @@
 
+//I wonder if this actually works https://www.firebase.com/docs/android/guide/offline-capabilities.html
+//Firebase.getDefaultConfig().setPersistenceEnabled(true);
+var baseFirebaseURL = "https://doecaptains.firebaseio.com";
+var currFirebaseURL = "https://doecaptains.firebaseio.com/lexnsb_2015-2016";
+//var currFirebaseURLRef=new Firebase(currFirebaseURL);
+//currFirebaseURLRef.keepSynced(true);
+
 //http://papermashup.com/read-url-get-variables-withjavascript/
 function getUrlVars() {
   var vars = {};
@@ -15,7 +22,7 @@ app.factory("Round", ["$firebaseObject",
   function($firebaseObject) {
 	return function(id) {
 	  // create a reference to the database where we will store our data
-	  var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
+	  var rounds = new Firebase(currFirebaseURL+"/rounds");
 	  var rounddata;
 	  if(id !== undefined && id !== null)
 		rounddata = rounds.child(id);
@@ -34,7 +41,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 	$scope.date = date.getDate()+"-"+monthNames[date.getMonth()]+"-"+date.getFullYear();
 	
-	var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
+	var rounds = new Firebase(currFirebaseURL+"/rounds");
 	$scope.availableRounds = $firebaseArray(rounds);
 	
 	$scope.unbindRound = function(){};
@@ -42,7 +49,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	if(getUrlVars().hasOwnProperty("roundID"))
 	  $scope.loadRound(getUrlVars()["roundID"]);
 	
-	var connectedRef = new Firebase("https://doecaptains.firebaseio.com/.info/connected");
+	var connectedRef = new Firebase(baseFirebaseURL+"/.info/connected");
 	connectedRef.on("value", function(snap) {
 	  console.log("Connection state changed:"+(snap.val()?"true":"false"))
 	  $scope.connected = !!snap.val();
@@ -55,7 +62,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 		$scope.round = $scope.blankround();
 		$scope.unbindRound = unbind;
 		
-		var rounds = new Firebase("https://doecaptains.firebaseio.com/rounds");
+		var rounds = new Firebase(currFirebaseURL+"/rounds");
 		$scope.availableRounds = $firebaseArray(rounds);
 	  });
 	}
@@ -153,6 +160,6 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 		players:[{pos:"Player",name:"Someone"}],
 	  },
 	];
-	$scope.members = $firebaseArray(new Firebase("https://doecaptains.firebaseio.com/members"));
+	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
   }
 ]);
