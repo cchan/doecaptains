@@ -31,7 +31,7 @@
 	
 	<div>
 		<div style="font-weight:bold; display:inline-block; position:fixed; top:2em; right: 2em; font-size:1.5em;"><span style="color:#f0f;background-color:#0f0;padding:0.5em;" ng-show="connected" class="ng-hide">synchronized</span><span style="color:#0ff;background-color:#f00;padding:0.5em;" ng-hide="connected">disconnected</span></div>
-		<a href="https://doecaptains.firebaseio.com/.json?print=pretty&format=export&download=doecaptains-backup.{{date}}.json">Download Backup</a>
+		<a ng-href="{{currFirebaseURL}}?print=pretty&format=export&download=doecaptains-backup.{{date}}.json">Download Backup</a>
 		<div id="round">
 		  <h2>Users</h2>
 			

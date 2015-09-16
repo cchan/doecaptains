@@ -41,6 +41,9 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 	$scope.date = date.getDate()+"-"+monthNames[date.getMonth()]+"-"+date.getFullYear();
 	
+	$scope.baseFirebaseURL = baseFirebaseURL;
+	$scope.currFirebaseURL = currFirebaseURL;
+	
 	var rounds = new Firebase(currFirebaseURL+"/rounds");
 	$scope.availableRounds = $firebaseArray(rounds);
 	
