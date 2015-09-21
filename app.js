@@ -1,10 +1,18 @@
 
 //I wonder if this actually works https://www.firebase.com/docs/android/guide/offline-capabilities.html
-//Firebase.getDefaultConfig().setPersistenceEnabled(true);
+//Firebase.getDefaultConfig().setPersistenceEnabled(true); //FIREBASE IN-BROWSER PERSISTENCE DOES NOT EXIST YET.
 var baseFirebaseURL = "https://doecaptains.firebaseio.com";
-var currFirebaseURL = "https://doecaptains.firebaseio.com/lexnsb_2015-2016";
+var currFirebaseURL = baseFirebaseURL + "/lexnsb_2015-2016";
 //var currFirebaseURLRef=new Firebase(currFirebaseURL);
 //currFirebaseURLRef.keepSynced(true);
+
+window.unloadMessage = "";
+window.onbeforeunload = function(e){
+	e = e || window.event;
+	if(e)e.returnValue = unloadMessage;
+	return window.unloadMessage;
+};
+
 
 //http://papermashup.com/read-url-get-variables-withjavascript/
 function getUrlVars() {
@@ -54,8 +62,12 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	
 	var connectedRef = new Firebase(baseFirebaseURL+"/.info/connected");
 	connectedRef.on("value", function(snap) {
-	  console.log("Connection state changed:"+(snap.val()?"true":"false"))
+	  console.log("Connection state changed: "+(snap.val()?"connected":"disconnected"))
 	  $scope.connected = !!snap.val();
+	  
+		//https://stackoverflow.com/questions/1119289/how-to-show-the-are-you-sure-you-want-to-navigate-away-from-this-page-when-ch
+		window.unloadMessage = snap.val() ? "Changes have been successfully synced, so it's ok to navigate away now."
+			: "You have unsynced changes! If you navigate away now, those changes will be lost.";
 	});
 	
 	$scope.newRound = function(){
