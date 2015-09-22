@@ -25,17 +25,15 @@
       .playerpos{font-weight: bold; display: inline;}
     </style>
   </head>
-  <body ng-controller="DOECaptainsController as dq">
+  <body ng-controller="DOECaptainsController as dq" ng-keypress="processKeypress($event)">
 	<noscript><b style="color:red;font-weight:bold;">Your javascript is off. You kinda need a lot of javascript for this.</b></noscript>
 	<h1 style="margin:0;">Lexington DOE Tracker</h1>
-	<label>hi log in pls<input type="password"></label>
+	<!--label>hi log in pls<input type="password"></label-->
 	
 	<div>
 		<div style="font-weight:bold; display:inline-block; position:fixed; top:2em; right: 2em; font-size:1.5em;"><span style="color:#f0f;background-color:#0f0;padding:0.5em;" ng-show="connected" class="ng-hide">synchronized</span><span style="color:#0ff;background-color:#f00;padding:0.5em;" ng-hide="connected">disconnected</span></div>
 		<a ng-href="{{currFirebaseURL}}?print=pretty&format=export&download=doecaptains-backup.{{date}}.json">Download Backup</a>
 		<div id="round">
-		  <h2>Users</h2>
-			
 		  <h2>Round Select</h2>
 		  <div>
 			<select ng-model="roundID" 
@@ -61,6 +59,7 @@
 				<div ng-repeat="(ind,player) in team.players track by $index">
 				  <input ng-model="player.pos" class="playerpos" />:
 				  <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members"><option></option></select>
+				  <input ng-model="player.bind" style="width:1em;" />
 				  <button ng-click="team.players.splice(ind,1)">x</button>
 				</div>
 				<button ng-click="team.players.push(blankplayer())">+</button>
@@ -86,9 +85,18 @@
 			  </div>
 			  <button ng-click="round.questions.push(blankquestion())">New Question</button>
 			</div>
+			<div id="teamdisplay" style="padding:50px;text-align:center;">
+			  <table ng-repeat="team in round.teams" style="display:inline-block;width:50%;">
+				<tr>
+					<td ng-repeat="player in team.players" style="text-align:center;margin:1px;background-color:#333;color:white;width:150px;">
+						{{player.pos}}
+						<h2 style="font-size: 2em;">{{player.bind}}</h2>
+						{{player.name}}
+					</td>
+				</tr>
+			  </table>
+			</div>
 		  </div>
-		</div>
-		<div id="teamdisplay">
 		</div>
 	</div>
 	

@@ -115,21 +115,21 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	  {
 		name: "Team 1",
 		players:[
-		  {pos:"Player 1",name:"Someone"},
-		  {pos:"Captain",name:"Someone"},
-		  {pos:"Player 2",name:"Someone"},
-		  {pos:"Player 3",name:"Someone"},
-		  {pos:"Player 4",name:"Someone"},
+		  {pos:"Player 4",name:"Someone",bind:"a"},
+		  {pos:"Player 3",name:"Someone",bind:"s"},
+		  {pos:"Player 2",name:"Someone",bind:"d"},
+		  {pos:"Captain",name:"Someone",bind:"f"},
+		  {pos:"Player 1",name:"Someone",bind:"g"},
 		],
 	  },
 	  {
 		name: "Team 2",
 		players:[
-		  {pos:"Player 1",name:"Someone"},
-		  {pos:"Captain",name:"Someone"},
-		  {pos:"Player 2",name:"Someone"},
-		  {pos:"Player 3",name:"Someone"},
-		  {pos:"Player 4",name:"Someone"},
+		  {pos:"Player 1",name:"Someone",bind:"h"},
+		  {pos:"Captain",name:"Someone",bind:"j"},
+		  {pos:"Player 2",name:"Someone",bind:"k"},
+		  {pos:"Player 3",name:"Someone",bind:"l"},
+		  {pos:"Player 4",name:"Someone",bind:";"},
 		],
 	  },
 	];
@@ -176,5 +176,10 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	  },
 	];
 	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
+	
+	$scope.processKeypress = function(e){
+		var charCode = (typeof e.which == "number") ? e.which : e.keyCode
+		console.log(String.fromCharCode(charCode));
+	}
   }
 ]);
