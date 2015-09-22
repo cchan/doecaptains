@@ -114,6 +114,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	$scope.regularroundteams = [ //Should never edit indices... change this.
 	  {
 		name: "Team 1",
+		color: "red",
 		players:[
 		  {pos:"Player 4",name:"Someone",bind:"a"},
 		  {pos:"Player 3",name:"Someone",bind:"s"},
@@ -124,6 +125,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	  },
 	  {
 		name: "Team 2",
+		color: "white",
 		players:[
 		  {pos:"Player 1",name:"Someone",bind:"h"},
 		  {pos:"Captain",name:"Someone",bind:"j"},
@@ -136,50 +138,110 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	$scope.speedroundteams = [
 	  {
 		name: "Team 1",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"a"}],
 	  },
 	  {
 		name: "Team 2",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"s"}],
 	  },
 	  {
 		name: "Team 3",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"d"}],
 	  },
 	  {
 		name: "Team 4",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"f"}],
 	  },
 	  {
 		name: "Team 5",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"g"}],
 	  },
 	  {
 		name: "Team 6",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"h"}],
 	  },
 	  {
 		name: "Team 7",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"j"}],
 	  },
 	  {
 		name: "Team 8",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"k"}],
 	  },
 	  {
 		name: "Team 9",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:"l"}],
 	  },
 	  {
 		name: "Team 10",
-		players:[{pos:"Player",name:"Someone"}],
+		players:[{pos:"Player",name:"Someone",bind:";"}],
 	  },
 	];
 	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
 	
 	$scope.processKeypress = function(e){
-		var charCode = (typeof e.which == "number") ? e.which : e.keyCode
-		console.log(String.fromCharCode(charCode));
+		if(typeof e === "string")
+			ch = e;
+		else{
+			var kc = (typeof e.which == "number") ? e.which : e.keyCode;
+			var ch = String.fromCharCode(kc);
+			console.log(ch);
+		}
+		if(kc == 13){
+			if(!$scope.round.questions)$scope.round.questions=[$scope.blankquestion()];
+			$scope.round.questions.$add($scope.blankquestion());
+		}else if(ch == " "){
+			for(var i = 0; i < $scope.round.teams.length; i++){
+				$scope.round.teams[i].lockedOut = false;
+				$scope.round.teams[i].onBonus = false;
+				for(var j = 0; j < $scope.round.teams[i].players.length; j++)
+					$scope.round.teams[i].players[j].statusColor = "black";
+			}
+			$scope.round.statusMsg = "Buzzers cleared";
+			$scope.round.buzzersLocked = false;
+			$scope.round.doneQuestion = false;
+		}
+		else if($scope.round.doneQuestion){
+			return;
+		}
+		else if(!$scope.round.buzzersLocked){
+			for(var i = 0; i < $scope.round.teams.length && !$scope.round.buzzersLocked; i++)
+				for(var j = 0; j < $scope.round.teams[i].players.length && !$scope.round.buzzersLocked && !$scope.round.teams[i].lockedOut; j++)
+					if($scope.round.teams[i].players[j].bind == ch){
+						$scope.round.teams[i].players[j].statusColor = "#990";
+						$scope.round.buzzersLocked = true;
+						$scope.round.buzzerTeam = i;
+						$scope.round.buzzerPlayer = j;
+						$scope.round.statusMsg = "Buzzing: "+$scope.round.teams[i].name+" "+$scope.round.teams[i].players[j].pos+", "+$scope.round.teams[i].players[j].name+". Press C for correct or X for incorrect.";
+					}
+		}else{
+			switch(ch){
+				case "c":
+					if($scope.round.teams[$scope.round.buzzerTeam].onBonus){
+						$scope.round.statusMsg = "Bonus correct! Go to next question with enter key.";
+						$scope.round.doneQuestion = true;
+					}
+					else{
+						$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "green";
+						$scope.round.buzzersLocked = true;
+						$scope.round.teams[$scope.round.buzzerTeam].onBonus = true;
+						$scope.round.statusMsg = "Toss-up correct! On bonus now. Mark C for correct or X for incorrect.";
+					}
+					break;
+				case "x":
+					if($scope.round.teams[$scope.round.buzzerTeam].onBonus){
+						$scope.round.statusMsg = "Bonus incorrect. Go to next question with enter key.";
+						$scope.round.doneQuestion = true;
+					}
+					else{
+						$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "red";
+						$scope.round.teams[$scope.round.buzzerTeam].lockedOut = true;
+						$scope.round.buzzersLocked = false;
+						$scope.round.statusMsg = "Toss-up incorrect! Buzzers locked for one team.";
+					}
+					break;
+			}
+		}
 	}
   }
 ]);
