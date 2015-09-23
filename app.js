@@ -6,13 +6,6 @@ var currFirebaseURL = baseFirebaseURL + "/lexnsb_2015-2016";
 //var currFirebaseURLRef=new Firebase(currFirebaseURL);
 //currFirebaseURLRef.keepSynced(true);
 
-window.unloadMessage = "";
-window.onbeforeunload = function(e){
-	e = e || window.event;
-	if(e)e.returnValue = unloadMessage;
-	return window.unloadMessage;
-};
-
 
 //http://papermashup.com/read-url-get-variables-withjavascript/
 function getUrlVars() {
@@ -66,8 +59,14 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	  $scope.connected = !!snap.val();
 	  
 		//https://stackoverflow.com/questions/1119289/how-to-show-the-are-you-sure-you-want-to-navigate-away-from-this-page-when-ch
-		window.unloadMessage = snap.val() ? "Changes have been successfully synced, so it's ok to navigate away now."
-			: "You have unsynced changes! If you navigate away now, those changes will be lost.";
+		if(!snap.val())
+			window.onbeforeunload = function(e){
+				e = e || window.event;
+				if(e)e.returnValue = "You have unsynced changes! If you navigate away now, those changes will be lost.";
+				return window.unloadMessage;
+			};
+		else
+			setTimeout(function(){window.onbeforeunload = null;},200);
 	});
 	
 	$scope.newRound = function(){
@@ -99,13 +98,13 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	  round:"Some Round From Somewhere Of Some Year",
 	  detail:"",
 	  teams: [$scope.blankteam(),$scope.blankteam()],
-	  questions:[],
+	  questions:[$scope.blankquestion()],
 	}};
 	
 	$scope.reset = function(){
 	  if(confirm("Are you sure you want to clear everything about this round?")){
 		$scope.round.teams = [];
-		$scope.round.questions = [];
+		$scope.round.questions = [$scope.blankquestion()];
 		return true;
 	  }
 	  else return false;
@@ -179,6 +178,15 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	];
 	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
 	
+	$scope.shiftPressed = false;
+	$scope.processKeydown = function(e){
+		var kc = (typeof e.which == "number") ? e.which : e.keyCode;
+		if(kc==16)$scope.shiftPressed=true;
+	}
+	$scope.processKeyup = function(e){
+		var kc = (typeof e.which == "number") ? e.which : e.keyCode;
+		if(kc==16)$scope.shiftPressed=false;
+	}
 	$scope.processKeypress = function(e){
 		if(typeof e === "string")
 			ch = e;
@@ -187,6 +195,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 			var ch = String.fromCharCode(kc);
 			console.log(ch);
 		}
+		
 		if(kc == 13){
 			if(!$scope.round.questions)$scope.round.questions=[$scope.blankquestion()];
 			$scope.round.questions.$add($scope.blankquestion());
@@ -200,6 +209,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 			$scope.round.statusMsg = "Buzzers cleared";
 			$scope.round.buzzersLocked = false;
 			$scope.round.doneQuestion = false;
+			return false;
 		}
 		else if($scope.round.doneQuestion){
 			return;
@@ -214,31 +224,30 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 						$scope.round.buzzerPlayer = j;
 						$scope.round.statusMsg = "Buzzing: "+$scope.round.teams[i].name+" "+$scope.round.teams[i].players[j].pos+", "+$scope.round.teams[i].players[j].name+". Press C for correct or X for incorrect.";
 					}
+		}else if($scope.round.teams[$scope.round.buzzerTeam].onBonus){
+			switch(ch){
+				case "c":
+					$scope.round.statusMsg = "Bonus correct! Go to next question with enter key.";
+					$scope.round.doneQuestion = true;
+					break;
+				case "x":
+					$scope.round.statusMsg = "Bonus incorrect. Go to next question with enter key.";
+					$scope.round.doneQuestion = true;
+					break;
+			}
 		}else{
 			switch(ch){
 				case "c":
-					if($scope.round.teams[$scope.round.buzzerTeam].onBonus){
-						$scope.round.statusMsg = "Bonus correct! Go to next question with enter key.";
-						$scope.round.doneQuestion = true;
-					}
-					else{
-						$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "green";
-						$scope.round.buzzersLocked = true;
-						$scope.round.teams[$scope.round.buzzerTeam].onBonus = true;
-						$scope.round.statusMsg = "Toss-up correct! On bonus now. Mark C for correct or X for incorrect.";
-					}
+					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "green";
+					$scope.round.buzzersLocked = true;
+					$scope.round.teams[$scope.round.buzzerTeam].onBonus = true;
+					$scope.round.statusMsg = "Toss-up correct! On bonus now. Mark C for correct or X for incorrect.";
 					break;
 				case "x":
-					if($scope.round.teams[$scope.round.buzzerTeam].onBonus){
-						$scope.round.statusMsg = "Bonus incorrect. Go to next question with enter key.";
-						$scope.round.doneQuestion = true;
-					}
-					else{
-						$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "red";
-						$scope.round.teams[$scope.round.buzzerTeam].lockedOut = true;
-						$scope.round.buzzersLocked = false;
-						$scope.round.statusMsg = "Toss-up incorrect! Buzzers locked for one team.";
-					}
+					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "red";
+					$scope.round.teams[$scope.round.buzzerTeam].lockedOut = true;
+					$scope.round.buzzersLocked = false;
+					$scope.round.statusMsg = "Toss-up incorrect! Buzzers locked for one team.";
 					break;
 			}
 		}
