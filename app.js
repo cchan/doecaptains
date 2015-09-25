@@ -182,10 +182,12 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	$scope.processKeydown = function(e){
 		var kc = (typeof e.which == "number") ? e.which : e.keyCode;
 		if(kc==16)$scope.shiftPressed=true;
+		$scope.keys[kc] = true;
 	}
 	$scope.processKeyup = function(e){
 		var kc = (typeof e.which == "number") ? e.which : e.keyCode;
 		if(kc==16)$scope.shiftPressed=false;
+		$scope.keys[kc] = false;
 	}
 	$scope.processKeypress = function(e){
 		if(typeof e === "string")
@@ -226,28 +228,40 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 					}
 		}else if($scope.round.teams[$scope.round.buzzerTeam].onBonus){
 			switch(ch){
-				case "c":
+				case "2":
 					$scope.round.statusMsg = "Bonus correct! Go to next question with enter key.";
 					$scope.round.doneQuestion = true;
 					break;
-				case "x":
+				case "3":
 					$scope.round.statusMsg = "Bonus incorrect. Go to next question with enter key.";
 					$scope.round.doneQuestion = true;
 					break;
 			}
 		}else{
 			switch(ch){
-				case "c":
+				case "1":
 					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "green";
 					$scope.round.buzzersLocked = true;
 					$scope.round.teams[$scope.round.buzzerTeam].onBonus = true;
 					$scope.round.statusMsg = "Toss-up correct! On bonus now. Mark C for correct or X for incorrect.";
 					break;
-				case "x":
+				case "2":
 					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "red";
 					$scope.round.teams[$scope.round.buzzerTeam].lockedOut = true;
 					$scope.round.buzzersLocked = false;
-					$scope.round.statusMsg = "Toss-up incorrect! Buzzers locked for one team.";
+					$scope.round.statusMsg = "Incorrect! Buzzers locked for one team.";
+					break;
+				case "3":
+					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "red";
+					$scope.round.teams[$scope.round.buzzerTeam].lockedOut = true;
+					$scope.round.buzzersLocked = false;
+					$scope.round.statusMsg = "Blurt! Buzzers locked for one team.";
+					break;
+				case "4":
+					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "red";
+					$scope.round.teams[$scope.round.buzzerTeam].lockedOut = true;
+					$scope.round.buzzersLocked = false;
+					$scope.round.statusMsg = "Stall! Buzzers locked for one team.";
 					break;
 			}
 		}

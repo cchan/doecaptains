@@ -102,10 +102,11 @@
 					{{player.name}}
 				</td>
 			  </tr></table>
-			  <table style="display:block; width:50%; padding:1%;"><tr>
-				<td ng-repeat="controlkeys in controlkeys">
-				
-				</td>
+			  <table style="display:block; width:50%; padding:1%;text-align:center; margin-left:auto;margin-right:auto;"><tr><!--Make it a directive at some point-->
+			    <td ng-click="processKeypress('1')" ng-style="(keys[48+1])?{background-color:'green'}:{background-color:black}"><h2 style="font-size: 2em;">1</h2>Correct</td>
+			    <td ng-click="processKeypress('2')" ng-style="(keys[48+2])?{background-color:'red'}:{background-color:black}"><h2 style="font-size: 2em;">2</h2>Incorrect</td>
+			    <td ng-click="processKeypress('3')" ng-style="round.onBonus?{background-color:'gray'}:(keys[48+3])?{background-color:'red'}:{background-color:black}"><h2 style="font-size: 2em;">3</h2>Blurt</td>
+			    <td ng-click="processKeypress('4')" ng-style="round.onBonus?{background-color:'gray'}:(keys[48+4])?{background-color:'red'}:{background-color:black}"><h2 style="font-size: 2em;">4</h2>Stall</td>
 			  </tr></table>
 			  <div style="font-size: 2em;" ng-bind="round.statusMsg"></div>
 			  <div style="font-size: 1.5em;">Press enter to go to the next question; press space to reset the current question.</div>
