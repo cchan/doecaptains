@@ -91,6 +91,7 @@ form button:hover{
 		lockColor=true;
 		$("#hiddenFrame").load(function(){
 			$("#ss-form").trigger("reset");
+			document.getElementsByName("entry.479208818")[0].focus();
 			$("#submitbtn span").html("Success!<br>Thanks for signing up!");
 			$("#submitbtn").css("background-color","green");
 			rewidth();
