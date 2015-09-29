@@ -15,17 +15,20 @@
 		test all features :/
 		test syncing for multiple editors, but shouldn't have to do that. Please. Ever. Implement locking?
 	-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-cookies.min.js"></script>
     <script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
     <script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
+	<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+	<script src="ngAutocomplete.js"></script>
     <script src="app.js"></script>
     <style>
       .teamname{font-size: 1.3em; font-weight: bold; margin-top: 1em;}
       .playerpos{font-weight: bold; display: inline;}
     </style>
   </head>
-  <body ng-controller="DOECaptainsController as dq" ng-keypress="processKeypress($event)" ng-keydown="processKeydown($event)" ng-keyup="processKeydown($event)">
+  <body ng-controller="DOECaptainsController as dq" ng-keydown="processKeydown($event)" ng-keyup="processKeydown($event)">
 	<noscript><b style="color:red;font-weight:bold;">Your javascript is off. You kinda need a lot of javascript for this.</b></noscript>
 	<h1 style="margin:0;">Lexington DOE Tracker</h1>
 	<!--label>hi log in pls<input type="password"></label-->
@@ -38,10 +41,10 @@
 		  <div>
 			<h2>Members</h2>
 			<div ng-repeat="(ind,member) in members">
-			  <input ng-model="member.name" />
-			  <button ng-click="members.splice(ind,1)">x</button>
+			  <input ng-model="member.name" ng-change="members.$save(member)" />
+			  <button ng-click="members.$remove(member)">x</button>
 			</div>
-			<button ng-click="members.push({name:''})">+</button>
+			<button ng-click="members.$add({name:''})">+</button>
 		  </div>
 		  <div>
 			<h2>Round Select</h2>
@@ -67,7 +70,7 @@
 				<div>Name:<input ng-model="team.name" class="teamname" /></div>
 				<div ng-repeat="(ind,player) in team.players track by $index">
 				  <input ng-model="player.pos" class="playerpos" />:
-				  <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for memberdata in members"><option></option></select>
+				  <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for (id,memberdata) in members"><option></option></select>
 				  <input ng-model="player.bind" style="width:1em;" />
 				  <button ng-click="team.players.splice(ind,1)">x</button>
 				</div>
@@ -94,7 +97,8 @@
 			  </div>
 			  <button ng-click="round.questions.push(blankquestion());">New Question</button>
 			</div>
-			<div id="teamdisplay" style="padding:50px;text-align:center;">
+			<div id="teamdisplay" style="padding:50px;text-align:center;" ng-keypress="processKeypress($event)" ng-click="$('#teamdispinput').focus();">
+			  <div><input id="teamdispinput" onkeypress="return false;"></input></div>
 			  <table ng-repeat="team in round.teams" style="display:inline-block;width:48%;padding:1%;"><tr>
 				<td ng-repeat="player in team.players" ng-click="processKeypress(player.bind)" ng-style="{'background-color':team.lockedOut?'gray':team.onBonus?'#393':player.statusColor,color:'white'}" style="text-align:center;margin:1px;background-color:#333;color:white;width:150px;">
 					{{player.pos}}
@@ -102,11 +106,11 @@
 					{{player.name}}
 				</td>
 			  </tr></table>
-			  <table style="display:block; width:50%; padding:1%;text-align:center; margin-left:auto;margin-right:auto;"><tr><!--Make it a directive at some point-->
-			    <td ng-click="processKeypress('1')" ng-style="(keys[48+1])?{background-color:'green'}:{background-color:black}"><h2 style="font-size: 2em;">1</h2>Correct</td>
-			    <td ng-click="processKeypress('2')" ng-style="(keys[48+2])?{background-color:'red'}:{background-color:black}"><h2 style="font-size: 2em;">2</h2>Incorrect</td>
-			    <td ng-click="processKeypress('3')" ng-style="round.onBonus?{background-color:'gray'}:(keys[48+3])?{background-color:'red'}:{background-color:black}"><h2 style="font-size: 2em;">3</h2>Blurt</td>
-			    <td ng-click="processKeypress('4')" ng-style="round.onBonus?{background-color:'gray'}:(keys[48+4])?{background-color:'red'}:{background-color:black}"><h2 style="font-size: 2em;">4</h2>Stall</td>
+			  <table style="color:white;display:block; width:50%; padding:1%;text-align:center; margin-left:auto;margin-right:auto;"><tr><!--Make it a directive at some point-->
+			    <td ng-click="processKeypress('1')" ng-style="(keys[48+1])?{'background-color':'green'}:{'background-color':'black'}"><h2 style="font-size: 2em;">1</h2>Correct</td>
+			    <td ng-click="processKeypress('2')" ng-style="(keys[48+2])?{'background-color':'red'}:{'background-color':'black'}"><h2 style="font-size: 2em;">2</h2>Incorrect</td>
+			    <td ng-click="processKeypress('3')" ng-style="round.onBonus?{'background-color':'gray'}:(keys[48+3])?{'background-color':'red'}:{'background-color':'black'}"><h2 style="font-size: 2em;">3</h2>Blurt</td>
+			    <td ng-click="processKeypress('4')" ng-style="round.onBonus?{'background-color':'gray'}:(keys[48+4])?{'background-color':'red'}:{'background-color':'black'}"><h2 style="font-size: 2em;">4</h2>Stall</td>
 			  </tr></table>
 			  <div style="font-size: 2em;" ng-bind="round.statusMsg"></div>
 			  <div style="font-size: 1.5em;">Press enter to go to the next question; press space to reset the current question.</div>
@@ -119,8 +123,6 @@
 		  </div>
 		</div>
 	</div>
-	
-    <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script-->
 <script>
 /*
     //backspace goes back

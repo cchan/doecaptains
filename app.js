@@ -6,6 +6,7 @@ var currFirebaseURL = baseFirebaseURL + "/lexnsb_2015-2016";
 //var currFirebaseURLRef=new Firebase(currFirebaseURL);
 //currFirebaseURLRef.keepSynced(true);
 
+$("input, textarea").on("keydown",function(e){if(!e)e=window.event;e.stopPropagation();})
 
 //http://papermashup.com/read-url-get-variables-withjavascript/
 function getUrlVars() {
@@ -17,7 +18,7 @@ function getUrlVars() {
 }
 
 //https://www.firebase.com/docs/web/libraries/angular/quickstart.html
-var app = angular.module("DOECaptainsApp", ["firebase","ngCookies"]);
+var app = angular.module("DOECaptainsApp", ["firebase","ngCookies","ngAutocomplete"]);
 
 app.factory("Round", ["$firebaseObject",
   function($firebaseObject) {
@@ -36,8 +37,12 @@ app.factory("Round", ["$firebaseObject",
   }
 ]);
 
-app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
-  function($scope, Round, $firebaseArray) {
+app.controller("RoundView", function($scope){
+	
+});
+
+app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray", "$firebaseObject",
+  function($scope, Round, $firebaseArray, $firebaseObject) {
 	var date = new Date();
 	var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 	$scope.date = date.getDate()+"-"+monthNames[date.getMonth()]+"-"+date.getFullYear();
@@ -49,6 +54,8 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 	$scope.availableRounds = $firebaseArray(rounds);
 	
 	$scope.unbindRound = function(){};
+	
+	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
 	
 	if(getUrlVars().hasOwnProperty("roundID"))
 	  $scope.loadRound(getUrlVars()["roundID"]);
@@ -176,9 +183,9 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 		players:[{pos:"Player",name:"Someone",bind:";"}],
 	  },
 	];
-	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
 	
 	$scope.shiftPressed = false;
+	$scope.keys=[];
 	$scope.processKeydown = function(e){
 		var kc = (typeof e.which == "number") ? e.which : e.keyCode;
 		if(kc==16)$scope.shiftPressed=true;
@@ -200,7 +207,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 		
 		if(kc == 13){
 			if(!$scope.round.questions)$scope.round.questions=[$scope.blankquestion()];
-			$scope.round.questions.$add($scope.blankquestion());
+			$scope.round.questions.push($scope.blankquestion());
 		}else if(ch == " "){
 			for(var i = 0; i < $scope.round.teams.length; i++){
 				$scope.round.teams[i].lockedOut = false;
@@ -224,15 +231,15 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 						$scope.round.buzzersLocked = true;
 						$scope.round.buzzerTeam = i;
 						$scope.round.buzzerPlayer = j;
-						$scope.round.statusMsg = "Buzzing: "+$scope.round.teams[i].name+" "+$scope.round.teams[i].players[j].pos+", "+$scope.round.teams[i].players[j].name+". Press C for correct or X for incorrect.";
+						$scope.round.statusMsg = "Buzzing: "+$scope.round.teams[i].name+" "+$scope.round.teams[i].players[j].pos+", "+$scope.round.teams[i].players[j].name+". Press 1 for correct or 2 for incorrect.";
 					}
 		}else if($scope.round.teams[$scope.round.buzzerTeam].onBonus){
 			switch(ch){
-				case "2":
+				case "1":
 					$scope.round.statusMsg = "Bonus correct! Go to next question with enter key.";
 					$scope.round.doneQuestion = true;
 					break;
-				case "3":
+				case "2":
 					$scope.round.statusMsg = "Bonus incorrect. Go to next question with enter key.";
 					$scope.round.doneQuestion = true;
 					break;
@@ -243,7 +250,7 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray",
 					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "green";
 					$scope.round.buzzersLocked = true;
 					$scope.round.teams[$scope.round.buzzerTeam].onBonus = true;
-					$scope.round.statusMsg = "Toss-up correct! On bonus now. Mark C for correct or X for incorrect.";
+					$scope.round.statusMsg = "Toss-up correct! On bonus now. Press 1 for correct or 2 for incorrect.";
 					break;
 				case "2":
 					$scope.round.teams[$scope.round.buzzerTeam].players[$scope.round.buzzerPlayer].statusColor = "red";
