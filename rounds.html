@@ -5,10 +5,10 @@
 		<script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
 		<script src="new.js"></script>
 		<script>
-		app.controller("Members", function($scope, $firebaseArray){
-			$scope.predicate = 'name';
-			$scope.direction = true;
-			$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
+		app.controller("Rounds", function($scope, $firebaseArray){
+			$scope.predicate = 'date';
+			$scope.direction = false;
+			$scope.rounds = $firebaseArray(new Firebase(currFirebaseURL+"/rounds"));
 		});
 		</script>
 		<style type="text/css">
@@ -18,22 +18,24 @@
 		</style>
 	</head>
 	<body ng-controller="List">
-		<table ng-controller="Members">
+		<table ng-controller="Rounds">
 			<tr>
 				<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate=='name' && direction, reverse: predicate=='name' && !direction}">Name</a></th>
+				<th><a href="" ng-click="order('date')" class="sortby" ng-class="{forward: predicate=='date' && direction, reverse: predicate=='date' && !direction}">Date</a></th>
 				<th></th>
 			</tr>
 			<tr>
 				<th><input ng-model="searchTerm" placeholder="filter..."></th>
 				<th></th>
 			</tr>
-			<tr ng-repeat="member in members | orderBy:predicate:!direction" ng-show="strInStr(searchTerm,member.name)">
-				<td><input id="{{member.$id}}_name" ng-model="member.name" ng-change="members.$save(member)"></td>
-				<td><button ng-click="remove(members,member)" tabindex="-1">x</button></td>
+			<tr ng-repeat="round in rounds | orderBy:predicate:!direction" ng-show="strInStr(searchTerm,round.name)">
+				<td><input id="{{round.$id}}_name" ng-model="round.name" ng-change="rounds.$save(round)"></td>
+				<td><input ng-model="round.date" ng-change="rounds.$save(round)"></td>
+				<td><a href="roundview.html?id={{round.$id}}">View</a></td>
 			</tr>
 			<tr>
 				<td>
-					<button ng-click="addNew(members)">+</button>
+					<button ng-click="addNew(rounds)">+</button>
 				</td>
 				<td></td>
 			</tr>
