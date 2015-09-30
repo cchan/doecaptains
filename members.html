@@ -1,0 +1,73 @@
+<html ng-app="DOECaptainsApp">
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+		<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+		<script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
+		<script>
+		var baseFirebaseURL = "https://doecaptains.firebaseio.com";
+		var currFirebaseURL = baseFirebaseURL + "/lexnsb_2015-2016";
+		var app = angular.module("DOECaptainsApp", ["firebase"]);
+		app.controller("Members", function($scope, $firebaseArray){
+			$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
+			
+			//https://docs.angularjs.org/api/ng/filter/orderBy
+			$scope.predicate = 'name';
+			$scope.direction = true;
+			$scope.order = function(predicate) {
+				$scope.direction = ($scope.predicate === predicate) ? !$scope.direction : false;
+				$scope.predicate = predicate;
+			};
+			$scope.addNew = function(fbarr){
+				fbarr.$add({name:""}).then(function(ref){
+					document.getElementById(ref.key()).focus();
+				});
+			};
+			$scope.searchTerm="";
+			$scope.hasSearchTerm = function(str){
+				str = str.toLowerCase();
+				var srch = $scope.searchTerm.toLowerCase();
+				
+				if(srch == "")return true;
+				if(str.length < srch.length)return false;
+				
+				//Searching for wherever one of the words in the name matches.
+				var ind = -1;
+				while((ind=str.indexOf(srch,ind+1))!==-1)
+					if(ind == 0 || str[ind-1]==' ')
+						return true;
+				return false;
+			};
+		});
+		</script>
+		<style type="text/css">
+		.sortby:after{font-size: 0.6em;}
+		.sortby.forward:after {content: '\25bc';}
+		.sortby.reverse:after {content: '\25b2';}
+		</style>
+	</head>
+	<body ng-controller="Members">
+		<table>
+			<tr>
+				<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate && direction, reverse: predicate && !direction}">Name</a></th>
+				<th></th>
+			</tr>
+			<tr>
+				<th><input ng-model="searchTerm" placeholder="filter..."></th>
+				<th></th>
+			</tr>
+			<tr ng-repeat="member in members | orderBy:predicate:!direction" ng-show="hasSearchTerm(member.name)">
+				<td><input id="{{member.$id}}" ng-model="member.name" ng-change="members.$save(member)"></td>
+				<td><button ng-click="members.$remove(member)" tabindex="-1">x</button></td>
+			</tr>
+			<tr>
+				<td>
+					<button ng-click="addNew(members)">+</button>
+				</td>
+				<td></td>
+			</tr>
+		</table>
+		<br>
+		<br>
+		<br>
+	</body>
+</html>

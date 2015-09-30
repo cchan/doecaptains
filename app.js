@@ -37,9 +37,6 @@ app.factory("Round", ["$firebaseObject",
   }
 ]);
 
-app.controller("RoundView", function($scope){
-	
-});
 
 app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray", "$firebaseObject",
   function($scope, Round, $firebaseArray, $firebaseObject) {
