@@ -1,0 +1,9 @@
+.list-table tr{
+	border-bottom: solid 5px #999;
+}
+.list-table td, .list-table th{
+	padding: 1em;
+}
+.list-table .sortby:after{font-size: 0.6em;}
+.list-table .sortby.forward:after {content: '\25bc';}
+.list-table .sortby.reverse:after {content: '\25b2';}

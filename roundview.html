@@ -1,0 +1,92 @@
+<html ng-app="DOECaptainsApp">
+	<head>
+		<meta charset='utf-8'>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+		<meta name='description' content='Lexington National Science Science Bowl Team Data Tracker'>
+		<meta name='author' content='Clive Chan (http://clive.io)'>
+		
+		<title>DOE Captains Tracker -- Members</title>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-cookies.min.js"></script>
+		<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+		<script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
+		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+		<script src="ngAutocomplete.js"></script>
+		<script src="app.js"></script>
+	</head>
+	<body ng-controller="DOECaptainsController">
+		<a href="rounds.html">Back</a>
+		<h2>Round Info</h2>
+		<div><b>ID:</b> <span ng-bind="round.$id">LOADING . . . . .</span></div>
+		<div><b>Round Name:</b> <input ng-model="round.name"/></div>
+		<div><b>Date:</b> <input ng-model="round.date"/></div>
+		<div><b>Which Round Read:</b> <input ng-model="round.round"></div>
+		<div><b>Additional Details?</b> <br><textarea ng-model="round.details"></textarea></div>
+		<div>
+		  <h2>Teams</h2>
+		  <div>
+			<button ng-click="reset() && (round.teams = regularroundteams)">Set up Blank Regular Round</button>
+			<button ng-click="reset() && (round.teams = speedroundteams)">Set up Blank Speed Round</button>
+		  </div>
+		  <div ng-repeat="team in round.teams track by $index">
+			<div>Name:<input ng-model="team.name" class="teamname" /></div>
+			<div ng-repeat="(ind,player) in team.players track by $index">
+			  <input ng-model="player.pos" class="playerpos" />:
+			  <select ng-model="player.name" ng-options="memberdata.name as memberdata.name for (id,memberdata) in members"><option></option></select>
+			  <input ng-model="player.bind" style="width:1em;" />
+			  <button ng-click="team.players.splice(ind,1)">x</button>
+			</div>
+			<button ng-click="team.players.push(blankplayer())">+</button>
+		  </div>
+		</div>
+		<br><button ng-click="round.teams.push(blankteam())">Add Team</button>
+		<div><b>Additional notes on team members' performance?</b> <br><textarea ng-model="round.notes"></textarea></div>
+		<div id="qhistorydisplay">
+		  <h2>Questions</h2>
+		  <div ng-repeat="(ind,question) in round.questions">
+			TOSS-UP
+			<select ng-model="question.subject"><option value="" selected>SUBJECT?</option><option>BIO</option><option>CHEM</option><option>PHYS</option><option>MATH</option><option>ESS</option></select>:
+			<select ng-model="question.buzz1.who"><option value="" selected>BUZZ 1?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+			<select ng-model="question.buzz1.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+			<select ng-model="question.buzz1.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+			<span ng-show="question.buzz1.response === 'Incorrect' || question.buzz1.response === 'Blurt' || question.buzz1.response === 'Stall'">
+			  <select ng-model="question.buzz2.who"><option value="" selected>BUZZ 2?</option><optgroup ng-repeat="team in round.teams" label="{{team.name}}"><option ng-repeat="player in team.players">{{player.name}}</option></optgroup></select>
+			  <select ng-model="question.buzz2.interrupt"><option value="" selected>INTERRUPT?</option><option>Interrupt</option><option>Regular</option></select>
+			  <select ng-model="question.buzz2.response"><option value="" selected>RESPONSE?</option><option>Correct</option><option>Incorrect</option><option>Blurt</option><option>Stall</option></select>
+			</span>
+			<select ng-model="question.bonus" ng-show="question.buzz1.response==='Correct' || question.buzz2.response==='Correct'"><option value="" selected>BONUS?</option><option>Correct</option><option>Incorrect</option></select>
+			<button ng-click="round.questions.splice(ind,1)">x</button>
+		  </div>
+		  <button ng-click="round.questions.push(blankquestion());">New Question</button>
+		</div>
+		<div id="teamdisplay" style="padding:50px;text-align:center;" ng-keypress="processKeypress($event)" ng-click="$('#teamdispinput').focus();">
+		  <div><input id="teamdispinput" onkeypress="return false;"></input></div>
+		  <table ng-repeat="team in round.teams" style="display:inline-block;width:48%;padding:1%;"><tr>
+			<td ng-repeat="player in team.players" ng-click="processKeypress(player.bind)" ng-style="{'background-color':team.lockedOut?'gray':team.onBonus?'#393':player.statusColor,color:'white'}" style="text-align:center;margin:1px;background-color:#333;color:white;width:150px;">
+				{{player.pos}}
+				<h2 style="font-size: 2em;">{{player.bind}}</h2>
+				{{player.name}}
+			</td>
+		  </tr></table>
+		  <table style="color:white;display:block; width:50%; padding:1%;text-align:center; margin-left:auto;margin-right:auto;"><tr><!--Make it a directive at some point-->
+			<td ng-click="processKeypress('1')" ng-style="(keys[48+1])?{'background-color':'green'}:{'background-color':'black'}"><h2 style="font-size: 2em;">1</h2>Correct</td>
+			<td ng-click="processKeypress('2')" ng-style="(keys[48+2])?{'background-color':'red'}:{'background-color':'black'}"><h2 style="font-size: 2em;">2</h2>Incorrect</td>
+			<td ng-click="processKeypress('3')" ng-style="round.onBonus?{'background-color':'gray'}:(keys[48+3])?{'background-color':'red'}:{'background-color':'black'}"><h2 style="font-size: 2em;">3</h2>Blurt</td>
+			<td ng-click="processKeypress('4')" ng-style="round.onBonus?{'background-color':'gray'}:(keys[48+4])?{'background-color':'red'}:{'background-color':'black'}"><h2 style="font-size: 2em;">4</h2>Stall</td>
+		  </tr></table>
+		  <div style="font-size: 2em;" ng-bind="round.statusMsg"></div>
+		  <div style="font-size: 1.5em;">Press enter to go to the next question; press space to reset the current question.</div>
+		  <br>
+		  <br>
+		  <br>
+		  <br>
+		  <br>
+		</div>
+		<br>
+		<br>
+		<br>
+	</body>
+</html>

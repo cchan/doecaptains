@@ -25,14 +25,9 @@ app.factory("Round", ["$firebaseObject",
 	return function(id) {
 	  // create a reference to the database where we will store our data
 	  var rounds = new Firebase(currFirebaseURL+"/rounds");
-	  var rounddata;
-	  if(id !== undefined && id !== null)
-		rounddata = rounds.child(id);
-	  else
-		rounddata = rounds.push();
 	  
 	  // return it as a synchronized object
-	  return $firebaseObject(rounddata);
+	  return $firebaseObject(rounds.child(id));
 	}
   }
 ]);
@@ -40,26 +35,21 @@ app.factory("Round", ["$firebaseObject",
 
 app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray", "$firebaseObject",
   function($scope, Round, $firebaseArray, $firebaseObject) {
-	var date = new Date();
-	var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-	$scope.date = date.getDate()+"-"+monthNames[date.getMonth()]+"-"+date.getFullYear();
 	
 	$scope.baseFirebaseURL = baseFirebaseURL;
 	$scope.currFirebaseURL = currFirebaseURL;
 	
-	var rounds = new Firebase(currFirebaseURL+"/rounds");
-	$scope.availableRounds = $firebaseArray(rounds);
-	
-	$scope.unbindRound = function(){};
-	
 	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
 	
-	if(getUrlVars().hasOwnProperty("roundID"))
-	  $scope.loadRound(getUrlVars()["roundID"]);
+	var v = getUrlVars();
+	if(v.hasOwnProperty("id") && v["id"] !== undefined && v["id"] !== "")
+	  Round(v["id"]).$bindTo($scope,"round");
+	else
+	  window.location.replace("rounds.html");
 	
 	var connectedRef = new Firebase(baseFirebaseURL+"/.info/connected");
 	connectedRef.on("value", function(snap) {
-	  console.log("Connection state changed: "+(snap.val()?"connected":"disconnected"))
+	  console.log("Connection state changed: "+(snap.val()?"connected":"disconnected"));
 	  $scope.connected = !!snap.val();
 	  
 		//https://stackoverflow.com/questions/1119289/how-to-show-the-are-you-sure-you-want-to-navigate-away-from-this-page-when-ch
@@ -72,26 +62,6 @@ app.controller("DOECaptainsController", ["$scope", "Round", "$firebaseArray", "$
 		else
 			setTimeout(function(){window.onbeforeunload = null;},200);
 	});
-	
-	$scope.newRound = function(){
-	  $scope.unbindRound();
-	  Round().$bindTo($scope,"round").then(function(unbind){
-		$scope.roundID = $scope.round.$id;
-		$scope.round = $scope.blankround();
-		$scope.unbindRound = unbind;
-		
-		var rounds = new Firebase(currFirebaseURL+"/rounds");
-		$scope.availableRounds = $firebaseArray(rounds);
-	  });
-	}
-	$scope.loadRound = function(roundID){
-	  $scope.unbindRound();
-	  if(roundID!==undefined && roundID!=="")
-		$scope.roundID = roundID;
-	  Round($scope.roundID).$bindTo($scope,"round").then(function(unbind){
-		$scope.unbindRound = unbind;
-	  });
-	};
 	
 	$scope.blankplayer = function(){return {pos:"Player",name:"Someone"};};
 	$scope.blankteam = function(){return {name:"Team X",players:[$scope.blankplayer()]};};

@@ -9,8 +9,10 @@ app.controller("List", function($scope){
 		$scope.direction = ($scope.predicate === predicate) ? !$scope.direction : false;
 		$scope.predicate = predicate;
 	};
-	$scope.addNew = function(fbArr){
-		fbArr.$add({name:""}).then(function(ref){
+	$scope.addNew = function(fbArr,blank){
+		if(blank===undefined)
+			blank = {name:""};
+		fbArr.$add(blank).then(function(ref){
 			document.getElementById(ref.key()+"_name").focus();
 		});
 	};

@@ -1,5 +1,13 @@
 <html ng-app="DOECaptainsApp">
 	<head>
+		<meta charset='utf-8'>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+		<meta name='description' content='Lexington National Science Science Bowl Team Data Tracker'>
+		<meta name='author' content='Clive Chan (http://clive.io)'>
+		
+		<title>DOE Captains Tracker -- Members</title>
+		
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
 		<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
 		<script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
@@ -11,19 +19,14 @@
 			$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
 		});
 		</script>
-		<style type="text/css">
-		.sortby:after{font-size: 0.6em;}
-		.sortby.forward:after {content: '\25bc';}
-		.sortby.reverse:after {content: '\25b2';}
-		</style>
 	</head>
 	<body ng-controller="List">
-		<table ng-controller="Members">
-			<tr>
+		<table ng-controller="Members" class="list-table">
+			<tr class="trh">
 				<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate=='name' && direction, reverse: predicate=='name' && !direction}">Name</a></th>
 				<th></th>
 			</tr>
-			<tr>
+			<tr class="trh">
 				<th><input ng-model="searchTerm" placeholder="filter..."></th>
 				<th></th>
 			</tr>
