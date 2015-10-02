@@ -10,15 +10,16 @@ app.controller("List", function($scope){
 		$scope.predicate = predicate;
 	};
 	$scope.addNew = function(fbArr,blank){
+		console.log("asdf");
 		if(blank===undefined)
-			blank = {name:""};
+			blank = {name:$scope.searchTerm};
 		fbArr.$add(blank).then(function(ref){
 			document.getElementById(ref.key()+"_name").focus();
 		});
 	};
 	$scope.searchTerm = "";
 	$scope.strInStr = function(srch,str){
-		console.log(srch,str);
+		//console.log(srch,str);
 		srch = srch.toLowerCase();
 		str = str.toLowerCase();
 		

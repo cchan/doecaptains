@@ -1,9 +1,38 @@
-.list-table tr{
-	border-bottom: solid 5px #999;
+.list-table{
+	border-collapse: collapse;
+	border: solid 1px #ddd;
+	margin: 0 auto;
+	text-align: left;
 }
 .list-table td, .list-table th{
-	padding: 1em;
+	padding: 0.3em 0.5em;
+}
+/*https://stackoverflow.com/questions/13624276/html-how-to-separate-table-rows-with-a-line*/
+.list-table thead th{
+	border-bottom: solid 1px #000;
+}
+.list-table tbody td{
+	border-bottom: solid 1px #ccc;
+}
+.list-table tbody tr:nth-child(odd){
+	background-color: #eee;
 }
 .list-table .sortby:after{font-size: 0.6em;}
 .list-table .sortby.forward:after {content: '\25bc';}
 .list-table .sortby.reverse:after {content: '\25b2';}
+.list-table .xBtn, .list-table .yBtn{
+	color:white;
+	font-weight:bold;
+	font-family: Helvetica, Verdana, Tahoma;
+	border:0;
+	font-size: 11px;
+	padding: 0px 5px 2px 5px;
+	width:16px; height: 16px; border-radius: 8px;
+	vertical-align:bottom;
+}
+.list-table .xBtn{background-color:#f00;}
+.list-table .yBtn{background-color:#0c0;padding-top:1px;}
+.list-table .yBtn:disabled{background-color:#ccc;}
+.list-table .xBtn:hover, .list-table .yBtn:hover{
+	cursor:pointer;
+}

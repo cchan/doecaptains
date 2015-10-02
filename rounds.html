@@ -26,26 +26,25 @@
 	</head>
 	<body ng-controller="List">
 		<table ng-controller="Rounds" class="list-table">
-			<tr>
-				<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate=='name' && direction, reverse: predicate=='name' && !direction}">Name</a></th>
-				<th><a href="" ng-click="order('date')" class="sortby" ng-class="{forward: predicate=='date' && direction, reverse: predicate=='date' && !direction}">Date</a></th>
-				<th></th>
-			</tr>
-			<tr>
-				<th><input ng-model="searchTerm" placeholder="filter..."></th>
-				<th></th>
-			</tr>
-			<tr ng-repeat="round in rounds | orderBy:predicate:!direction" ng-show="strInStr(searchTerm,round.name)">
-				<td><input id="{{round.$id}}_name" ng-model="round.name" ng-change="rounds.$save(round)"></td>
-				<td><input ng-model="round.date" ng-change="rounds.$save(round)"></td>
-				<td><a href="roundview.html?id={{round.$id}}">View</a></td>
-			</tr>
-			<tr>
-				<td>
-					<button ng-click="addNew(rounds,blankRound)">+</button>
-				</td>
-				<td></td>
-			</tr>
+			<thead>
+				<tr>
+					<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate=='name' && direction, reverse: predicate=='name' && !direction}">Name</a></th>
+					<th><a href="" ng-click="order('date')" class="sortby" ng-class="{forward: predicate=='date' && direction, reverse: predicate=='date' && !direction}">Date</a></th>
+					<th></th>
+				</tr>
+				<tr>
+					<th><input ng-model="searchTerm" placeholder="filter or add..."></th>
+					<th></th>
+					<th><button class="xBtn" ng-click="addNew(rounds,blankRound)">+</button></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="round in rounds | orderBy:predicate:!direction" ng-show="strInStr(searchTerm,round.name)">
+					<td><input id="{{round.$id}}_name" ng-model="round.name" ng-change="rounds.$save(round)"></td>
+					<td><input ng-model="round.date" ng-change="rounds.$save(round)"></td>
+					<td><a href="roundview.html?id={{round.$id}}">View</a></td>
+				</tr>
+			</tbody>
 		</table>
 		<br>
 		<br>

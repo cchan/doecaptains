@@ -12,6 +12,7 @@
 		<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
 		<script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
 		<script src="new.js"></script>
+		<link rel="stylesheet" href="style.css">
 		<script>
 		app.controller("Members", function($scope, $firebaseArray){
 			$scope.predicate = 'name';
@@ -22,24 +23,34 @@
 	</head>
 	<body ng-controller="List">
 		<table ng-controller="Members" class="list-table">
-			<tr class="trh">
-				<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate=='name' && direction, reverse: predicate=='name' && !direction}">Name</a></th>
-				<th></th>
-			</tr>
-			<tr class="trh">
-				<th><input ng-model="searchTerm" placeholder="filter..."></th>
-				<th></th>
-			</tr>
-			<tr ng-repeat="member in members | orderBy:predicate:!direction" ng-show="strInStr(searchTerm,member.name)">
-				<td><input id="{{member.$id}}_name" ng-model="member.name" ng-change="members.$save(member)"></td>
-				<td><button ng-click="remove(members,member)" tabindex="-1">x</button></td>
-			</tr>
-			<tr>
-				<td>
-					<button ng-click="addNew(members)">+</button>
-				</td>
-				<td></td>
-			</tr>
+			<thead>
+				<tr>
+					<th></th>
+					<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate=='name' && direction, reverse: predicate=='name' && !direction}">Name</a></th>
+					<th><a href="" ng-click="order('grade')" class="sortby" ng-class="{forward: predicate=='grade' && direction, reverse: predicate=='grade' && !direction}">Grade</a></th>
+					<th></th>
+				</tr>
+				<tr>
+					<th></th>
+					<th><input ng-model="searchTerm" placeholder="filter or add..."></th>
+					<th></th>
+					<th><button class="yBtn" ng-disabled="!searchTerm" ng-click="addNew(members)">+</button></th>
+				</tr>
+			</thead>
+			<tbody>
+				<!--http://stackoverflow.com/a/18593018/1181387-->
+				<tr ng-repeat="member in filteredMembers = (members | orderBy:predicate:!direction)" ng-show="strInStr(searchTerm,member.name)">
+					<td><input type="checkbox" name="member_selection" value="{{member.$id}}"></td>
+					<td><input id="{{member.$id}}_name" ng-model="member.name" ng-change="members.$save(member)"></td>
+					<td><input style="width:3em;" ng-model="member.grade" ng-change="members.$save(member)"></td>
+					<td><button class="xBtn" ng-click="remove(members,member)" tabindex="-1">x</button></td>
+				</tr>
+			</tbody>
+			<tfoot>
+				<tr ng-show="!filteredMembers.length" style="background-color:#ddd;">
+					<td colspan="4" style="text-align:center;color:#fff;font-style:italic;">No entries.</td>
+				</tr>
+			</tfoot>
 		</table>
 		<br>
 		<br>
