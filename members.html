@@ -18,6 +18,9 @@
 			$scope.predicate = 'name';
 			$scope.direction = true;
 			$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
+			
+			$scope.allowedGrades = [9,10,11,12];
+			$scope.allowedSubjs = ["Bio","Chem","Phys","Math","ESS"];
 		});
 		</script>
 	</head>
@@ -39,21 +42,25 @@
 			</thead>
 			<tbody>
 				<!--http://stackoverflow.com/a/18593018/1181387-->
-				<tr ng-repeat="member in filteredMembers = (members | orderBy:predicate:!direction)" ng-show="strInStr(searchTerm,member.name)">
+				<tr ng-repeat="member in members | orderBy:predicate:!direction" ng-show="strInStr(searchTerm,member.name)">
 					<td><input type="checkbox" name="member_selection" value="{{member.$id}}"></td>
 					<td><input id="{{member.$id}}_name" ng-model="member.name" ng-change="members.$save(member)"></td>
-					<td><input style="width:3em;" ng-model="member.grade" ng-change="members.$save(member)"></td>
+					<td><select ng-model="member.grade" ng-change="members.$save(member)" ng-options="grade as grade for grade in allowedGrades"></select></td>
+					<td><select ng-model="member.grade" ng-change="members.$save(member)" ng-options="subj as subj for subj in allowedSubjs"></select></td>
+					<td><select ng-model="member.grade" ng-change="members.$save(member)" ng-options="subj as subj for subj in allowedSubjs"></select></td>
 					<td><button class="xBtn" ng-click="remove(members,member)" tabindex="-1">x</button></td>
 				</tr>
 			</tbody>
-			<tfoot>
-				<tr ng-show="!filteredMembers.length" style="background-color:#ddd;">
-					<td colspan="4" style="text-align:center;color:#fff;font-style:italic;">No entries.</td>
-				</tr>
-			</tfoot>
 		</table>
 		<br>
 		<br>
 		<br>
+		
+		<datalist id="grades-list">
+			<option ng-repeat="grade in grades">{{grade}}</option>
+		</datalist>
+		<datalist id="subjs-list">
+			<option ng-repeat="subj in subjs">{{subj}}</option>
+		</datalist>
 	</body>
 </html>

@@ -6,7 +6,7 @@ var app = angular.module("DOECaptainsApp", ["firebase"]);
 app.controller("List", function($scope){
 	//https://docs.angularjs.org/api/ng/filter/orderBy
 	$scope.order = function(predicate) {
-		$scope.direction = ($scope.predicate === predicate) ? !$scope.direction : false;
+		$scope.direction = ($scope.predicate === predicate) ? !$scope.direction : false; //Defaults to downward when switch to diff column. If same column, toggles.
 		$scope.predicate = predicate;
 	};
 	$scope.addNew = function(fbArr,blank){
