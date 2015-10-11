@@ -15,52 +15,64 @@
 		<link rel="stylesheet" href="style.css">
 		<script>
 		app.controller("Members", function($scope, $firebaseArray){
-			$scope.predicate = 'name';
-			$scope.direction = true;
-			$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
+			//IMPORT
+			/*var str = "Vivek Bhupatiraju <triforce314@gmail.com>, Will Sherwood <whsherwood@gmail.com>, Afareen Jaleel <afareenj@gmail.com>, Aiyappa Kodendera <pandikary@gmail.com>, Andrew Wang <andrewwang86@gmail.com>, Bharat Srirangam <bharatsrirangam@gmail.com>, Cathwin <cricketgottachirp@gmail.com>, Clive Chan <doobahead@gmail.com>, Derik Kauffman <derikk@me.com>, DOE Captains <doecaptains@gmail.com>, Eric Xia <ericzxia@gmail.com>, Evan Fang <fangevan85@gmail.com>, Jason DiMasi <notjasonderulo99@gmail.com>, John Guo <johnguolex@gmail.com>, Karen Zhou <karenz12321@gmail.com>, Nicholas Gould <ngould@sch.ci.lexington.ma.us>, Ravi Raghavan <ravi1998@gmail.com>, Robert Pohlman <rpohlman@sch.ci.lexington.ma.us>, Shivi Maheswaran <shivimaheswaran@gmail.com>, Snigdha Allaparthi <snigy2000@gmail.com>, Sophia Zhang <szhanghdp@gmail.com>, Vishnu Amrit <vishnuamritpydah@gmail.com>";
+			var spl = str.split(", ");
+			var arr = new Array();
+			for(var i = 0; i < spl.length; i++){
+				arr[i]={};
+				arr[i].name=spl[i].split(" <")[0];
+				arr[i].email=spl[i].split(" <")[1].slice(0,-1);
+				$scope.$parent.data.$add(arr[i]);
+			}
+			console.log(arr);*/
 			
-			$scope.allowedGrades = [9,10,11,12];
-			$scope.allowedSubjs = ["Bio","Chem","Phys","Math","ESS"];
+			$scope.$parent.init("/members", [
+				{name:"name",width:"15em",display:"Name"},
+				{name:"email",width:"8em",display:"Email"},
+				{name:"grade",width:"2em",display:"Grade"},
+				{name:"subj1",width:"10em",display:"Subject 1"},
+				{name:"subj2",width:"10em",display:"Subject 2"}
+			], "name");
 		});
 		</script>
 	</head>
 	<body ng-controller="List">
+		<center>
+			<b>Member List</b>
+			<a href="rounds.html">Round List</a>
+		</center>
+		<br>
 		<table ng-controller="Members" class="list-table">
 			<thead>
 				<tr>
 					<th></th>
-					<th><a href="" ng-click="order('name')" class="sortby" ng-class="{forward: predicate=='name' && direction, reverse: predicate=='name' && !direction}">Name</a></th>
-					<th><a href="" ng-click="order('grade')" class="sortby" ng-class="{forward: predicate=='grade' && direction, reverse: predicate=='grade' && !direction}">Grade</a></th>
+					<th ng-repeat="field in fields">
+						<a href="" ng-click="order(field.name,$scope)" class="sortby" ng-class="{forward: predicate==field.name && direction, reverse: predicate==field.name && !direction}">{{field.display}}</a>
+					</th>
 					<th></th>
 				</tr>
 				<tr>
-					<th></th>
-					<th><input ng-model="searchTerm" placeholder="filter or add..."></th>
-					<th></th>
-					<th><button class="yBtn" ng-disabled="!searchTerm" ng-click="addNew(members)">+</button></th>
+					<th><button class="oBtn" ng-click="search=blank">o</button></th>
+					<th ng-repeat="field in fields">
+						<input style="width:{{field.width}}" ng-model="search[field.name]" placeholder="filter or add...">
+					</th>
+					<th><button class="pBtn" ng-click="addNew(data,search)">+</button></th>
 				</tr>
 			</thead>
 			<tbody>
 				<!--http://stackoverflow.com/a/18593018/1181387-->
-				<tr ng-repeat="member in members | orderBy:predicate:!direction" ng-show="strInStr(searchTerm,member.name)">
-					<td><input type="checkbox" name="member_selection" value="{{member.$id}}"></td>
-					<td><input id="{{member.$id}}_name" ng-model="member.name" ng-change="members.$save(member)"></td>
-					<td><select ng-model="member.grade" ng-change="members.$save(member)" ng-options="grade as grade for grade in allowedGrades"></select></td>
-					<td><select ng-model="member.grade" ng-change="members.$save(member)" ng-options="subj as subj for subj in allowedSubjs"></select></td>
-					<td><select ng-model="member.grade" ng-change="members.$save(member)" ng-options="subj as subj for subj in allowedSubjs"></select></td>
-					<td><button class="xBtn" ng-click="remove(members,member)" tabindex="-1">x</button></td>
+				<tr ng-repeat="datum in data | orderBy:predicate:!direction" ng-show="memberInMember(search,datum)">
+					<td><input type="checkbox" name="member_selection" value="{{datum.$id}}"></td>
+					<td ng-repeat="field in fields">
+						<input style="width:{{field.width}}" ng-model="datum[field.name]" ng-change="data.$save(datum)">
+					</td>
+					<td><button class="xBtn" ng-click="remove(data,datum)" tabindex="-1">x</button></td>
 				</tr>
 			</tbody>
 		</table>
 		<br>
 		<br>
 		<br>
-		
-		<datalist id="grades-list">
-			<option ng-repeat="grade in grades">{{grade}}</option>
-		</datalist>
-		<datalist id="subjs-list">
-			<option ng-repeat="subj in subjs">{{subj}}</option>
-		</datalist>
 	</body>
 </html>

@@ -1,3 +1,7 @@
+body{
+	overflow-y: scroll;
+}
+
 .list-table{
 	border-collapse: collapse;
 	border: solid 1px #ddd;
@@ -17,10 +21,10 @@
 .list-table tbody tr:nth-child(odd){
 	background-color: #eee;
 }
-.list-table .sortby:after{font-size: 0.6em;}
-.list-table .sortby.forward:after {content: '\25bc';}
-.list-table .sortby.reverse:after {content: '\25b2';}
-.list-table .xBtn, .list-table .yBtn{
+.list-table .sortby:after{font-size: 0.6em;visibility:hidden;content: '\25bc';} /*visibility fanciness prevents width-shifting problem*/
+.list-table .sortby.forward:after {content: '\25bc';visibility:visible;}
+.list-table .sortby.reverse:after {content: '\25b2';visibility:visible;}
+.list-table .xBtn, .list-table .pBtn, .list-table .oBtn{
 	color:white;
 	font-weight:bold;
 	font-family: Helvetica, Verdana, Tahoma;
@@ -31,8 +35,9 @@
 	vertical-align:bottom;
 }
 .list-table .xBtn{background-color:#f00;}
-.list-table .yBtn{background-color:#0c0;padding-top:1px;}
-.list-table .yBtn:disabled{background-color:#ccc;}
-.list-table .xBtn:hover, .list-table .yBtn:hover{
+.list-table .pBtn{background-color:#0c0;padding-top:1px;}
+.list-table .oBtn{background-color:#33f;}
+.list-table .xBtn:disabled, .list-table .pBtn:disabled, .list-table .oBtn:disabled{background-color:#ccc;}
+.list-table .xBtn:hover, .list-table .pBtn:hover, .list-table .oBtn:hover{
 	cursor:pointer;
 }

@@ -3,23 +3,47 @@ var currFirebaseURL = baseFirebaseURL + "/lexnsb_2015-2016";
 
 var app = angular.module("DOECaptainsApp", ["firebase"]);
 
-app.controller("List", function($scope){
+app.controller("List", function($scope, $firebaseArray){
+	$scope.init = function(fbPath,fields,predicate){
+		$scope.predicate = predicate;
+		$scope.direction = true;
+		$scope.data = $firebaseArray(new Firebase(currFirebaseURL+fbPath));
+		$scope.fields = fields;
+		$scope.blank = {};
+		for(var i = 0; i < $scope.fields.length; i++)
+			$scope.blank[$scope.fields[i].name]="";
+		$scope.search = $scope.blank;
+	};
+	
 	//https://docs.angularjs.org/api/ng/filter/orderBy
 	$scope.order = function(predicate) {
 		$scope.direction = ($scope.predicate === predicate) ? !$scope.direction : false; //Defaults to downward when switch to diff column. If same column, toggles.
 		$scope.predicate = predicate;
 	};
+	
 	$scope.addNew = function(fbArr,blank){
-		console.log("asdf");
-		if(blank===undefined)
-			blank = {name:$scope.searchTerm};
 		fbArr.$add(blank).then(function(ref){
 			document.getElementById(ref.key()+"_name").focus();
 		});
 	};
-	$scope.searchTerm = "";
-	$scope.strInStr = function(srch,str){
-		//console.log(srch,str);
+	$scope.memberInMember = function(srch, members){
+		var finalreturn = true;
+		for(var key in srch){
+			if(srch.hasOwnProperty(key)){
+				if(srch[key]!=""){
+					if(strInStr(srch[key],members[key]))
+						return true;
+					else
+						finalreturn = false;
+				}
+			}
+		}
+		return finalreturn;
+	};
+	var strInStr = function(srch, str){
+		if(srch == undefined)srch = "";
+		if(str == undefined)str = "";
+		
 		srch = srch.toLowerCase();
 		str = str.toLowerCase();
 		
@@ -34,7 +58,14 @@ app.controller("List", function($scope){
 		return false;
 	};
 	$scope.remove = function(fbArr, item){
-		if(confirm("Are you sure you want to delete this player?"))
+		if(confirm("Are you sure you want to delete this row?"))
 			fbArr.$remove(item);
 	};
+	$scope.anyFieldsEmpty = function(object, fields){
+		console.log('a');
+		for(var i = 0; i < fields.length; i++)
+			if(object[fields[i]]===undefined)
+				return true;
+		return false;
+	}
 });
