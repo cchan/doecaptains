@@ -8,37 +8,16 @@
 		
 		<title>DOE Captains Tracker -- Members</title>
 		
-		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-cookies.js"></script>
 		<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
 		<script src="https://cdn.firebase.com/libs/angularfire/1.1.2/angularfire.min.js"></script>
 		<script src="new.js"></script>
 		<link rel="stylesheet" href="style.css">
-		<script>
-		app.controller("Members", function($scope, $firebaseArray){
-			//IMPORT
-			/*var str = "Vivek Bhupatiraju <triforce314@gmail.com>, Will Sherwood <whsherwood@gmail.com>, Afareen Jaleel <afareenj@gmail.com>, Aiyappa Kodendera <pandikary@gmail.com>, Andrew Wang <andrewwang86@gmail.com>, Bharat Srirangam <bharatsrirangam@gmail.com>, Cathwin <cricketgottachirp@gmail.com>, Clive Chan <doobahead@gmail.com>, Derik Kauffman <derikk@me.com>, DOE Captains <doecaptains@gmail.com>, Eric Xia <ericzxia@gmail.com>, Evan Fang <fangevan85@gmail.com>, Jason DiMasi <notjasonderulo99@gmail.com>, John Guo <johnguolex@gmail.com>, Karen Zhou <karenz12321@gmail.com>, Nicholas Gould <ngould@sch.ci.lexington.ma.us>, Ravi Raghavan <ravi1998@gmail.com>, Robert Pohlman <rpohlman@sch.ci.lexington.ma.us>, Shivi Maheswaran <shivimaheswaran@gmail.com>, Snigdha Allaparthi <snigy2000@gmail.com>, Sophia Zhang <szhanghdp@gmail.com>, Vishnu Amrit <vishnuamritpydah@gmail.com>";
-			var spl = str.split(", ");
-			var arr = new Array();
-			for(var i = 0; i < spl.length; i++){
-				arr[i]={};
-				arr[i].name=spl[i].split(" <")[0];
-				arr[i].email=spl[i].split(" <")[1].slice(0,-1);
-				$scope.$parent.data.$add(arr[i]);
-			}
-			console.log(arr);*/
-			
-			$scope.$parent.init("/members", [
-				{name:"name",width:"15em",display:"Name"},
-				{name:"email",width:"8em",display:"Email"},
-				{name:"grade",width:"2em",display:"Grade"},
-				{name:"subj1",width:"10em",display:"Subject 1"},
-				{name:"subj2",width:"10em",display:"Subject 2"}
-			], "name");
-		});
-		</script>
 	</head>
 	<body ng-controller="List">
 		<center>
+			<a href="index.html">Home</a>
 			<b>Member List</b>
 			<a href="rounds.html">Round List</a>
 		</center>

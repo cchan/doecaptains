@@ -1,6 +1,27 @@
 body{
 	overflow-y: scroll;
 }
+.center-wrap{
+	width: 60%;
+	text-align: center;
+	margin-left: auto; margin-right: auto;
+}
+a.linkbox{
+	font-size: 2em;
+	padding: 0.5em 1em;
+	margin: 1em 0.5em;
+	border: solid 1px #000;
+	color: black;
+	background-color: white;
+	text-decoration: none;
+	transition: color 0.3s, background-color 0.3s;
+	display: inline-block;
+	width: 5em;
+}
+a.linkbox:hover{
+	background-color: black;
+	color: white;
+}
 
 .list-table{
 	border-collapse: collapse;
