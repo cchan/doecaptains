@@ -62,3 +62,8 @@ a.linkbox:hover{
 .list-table .xBtn:hover, .list-table .pBtn:hover, .list-table .oBtn:hover{
 	cursor:pointer;
 }
+
+
+fieldset legend{font-weight:bold;text-align:center;}
+
+

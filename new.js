@@ -1,5 +1,4 @@
 var baseFirebaseURL = "https://doecaptains.firebaseio.com";
-var currFirebaseURL = baseFirebaseURL + "/lexnsb_2015-2016";
 
 var app = angular.module("DOECaptainsApp", ["firebase", "ngCookies"]);
 
@@ -12,6 +11,15 @@ function copyFbRecord(oldRef, newRef) {
 	});
 }
 //var oldRef = new Firebase(baseFirebaseURL+"/"+CryptoJS.SHA3(PASSWORD).toString()+"/lexnsb_2015-2016");var newRef =new Firebase(baseFirebaseURL+"/X"+CryptoJS.SHA3(PASSWORD).toString()+"/lexnsb_2015-2016"); copyFbRecord(oldRef,newRef);
+
+//http://papermashup.com/read-url-get-variables-withjavascript/
+function getUrlVars() {
+  var vars = {};
+  var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+	vars[key] = value;
+  });
+  return vars;
+}
 
 app.controller("IndexLogin", function($scope,$cookies){
 	var fb = new Firebase(baseFirebaseURL);
@@ -143,4 +151,44 @@ app.controller("Rounds", function($scope, $firebaseArray){
 		{name:"name",width:"15em",display:"Name"},
 		{name:"date",width:"8em",display:"Date YY-MM-DD"}
 	], "date");
+});
+app.factory("Round", function($firebaseObject, $cookies) {
+	return function(id) {
+	  // create a reference to the database where we will store our data
+	  var currFirebaseURL = baseFirebaseURL + "/" + $cookies.get("authpath") + "/lexnsb_2015-2016";
+	  var rounds = new Firebase(currFirebaseURL+"/rounds");
+	  
+	  // return it as a synchronized object
+	  return $firebaseObject(rounds.child(id));
+	}
+});
+app.controller("RoundView", function($scope, $cookies, $firebaseArray, Round){
+	var currFirebaseURL = baseFirebaseURL + "/" + $cookies.get("authpath") + "/lexnsb_2015-2016";
+	
+	$scope.currFirebaseURL = currFirebaseURL;
+	
+	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
+	
+	
+	var v = getUrlVars();
+	if(v.hasOwnProperty("id") && v["id"] !== undefined && v["id"] !== "")
+	  Round(v["id"]).$bindTo($scope,"round");
+	else
+	  window.location.replace("rounds.html");
+	
+	var connectedRef = new Firebase(baseFirebaseURL+"/.info/connected");
+	connectedRef.on("value", function(snap) {
+	  console.log("Connection state changed: "+(snap.val()?"connected":"disconnected"));
+	  $scope.connected = !!snap.val();
+	  
+		//https://stackoverflow.com/questions/1119289/how-to-show-the-are-you-sure-you-want-to-navigate-away-from-this-page-when-ch
+		if(!snap.val())
+			window.onbeforeunload = function(e){
+				e = e || window.event;
+				if(e)e.returnValue = "You have unsynced changes! If you navigate away now, those changes will be lost.";
+				return window.unloadMessage;
+			};
+		else
+			setTimeout(function(){window.onbeforeunload = null;},200);
+	});
 });
