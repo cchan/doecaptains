@@ -8,6 +8,8 @@
 		
 		<title>DOE Captains Tracker -- Members</title>
 		
+	<!--JUST HAVE SPEED AND REGULAR AND NO OTHERS-->
+	
 	<!--Here is an editable display of all the questions that have been read so far. Who(s) buzzed, what they(s) did, bonus, etc. -->
 	<!--Though we love the new input system, you will always be able to enter data this way too. 
 	THE NEW INPUT SYSTEM SHOULD JUST BE A LAYER OVER THIS DROPDOWN-BOX SYSTEM.
@@ -35,12 +37,15 @@
 			<div><b>Date:</b> <input ng-model="round.date"/></div>
 			<div><b>Which Round Read:</b> <input ng-model="round.round"></div>
 			<div><b>Additional Details</b> <br><textarea ng-model="round.details"></textarea></div>
+			
 			<div><b>Additional Notes on Team Members' Performance</b> <br><textarea ng-model="round.notes"></textarea></div>
 			
-			<button ng-click="reset() && (round.teams = regularroundteams)">Set up Blank Regular Round</button>
-			<button ng-click="reset() && (round.teams = speedroundteams)">Set up Blank Speed Round</button>
-			
-			<button>Lock</button>
+			<div>
+				<button ng-click="reset() && (round.teams = regularroundteams)">Set up Blank Regular Round</button>
+				<button ng-click="reset() && (round.teams = speedroundteams)">Set up Blank Speed Round</button>
+				
+				<button>Lock</button>
+			</div>
 		</fieldset>
 		<fieldset>
 			<legend>Status</legend>
@@ -50,16 +55,15 @@
 		
 		<br><button ng-click="round.teams.push(blankteam())">Add Team</button>
 		
-		<div id="teamdisplay" style="padding:50px;text-align:center;" ng-keypress="processKeypress($event)" ng-click="$('#teamdispinput').focus();">
-		  <div><input id="teamdispinput" onkeypress="return false;"></input></div>
+		<div id="teamdisplay" ng-keypress="processKeypress($event)" ng-click="$('#teamdispinput').focus();">
 		  <div ng-repeat="team in round.teams">
 			<input ng-model="team.name" class="teamname" />
 			<table style="display:inline-block;width:48%;padding:1%;"><tr>
 				<td><button ng-click="team.players.push(blankplayer())">Add Player</button></td>
 				<td ng-repeat="player in team.players" ng-click="processKeypress(player.bind)" ng-style="{'background-color':team.lockedOut?'gray':team.onBonus?'#393':player.statusColor,color:'white'}" style="text-align:center;margin:1px;background-color:#333;color:white;width:150px;">
 					<input ng-model="player.pos" class="playerpos" />
-					<h2 style="font-size: 2em;"><select ng-model="player.name" ng-options="memberdata.name as memberdata.name for (id,memberdata) in members"><option></option></select></h2>
-					<input ng-model="player.bind" style="width:1em;" />
+					<input ng-model="player.bind" style="font-size:2em;width:1em;" />
+					<select ng-model="player.name" ng-options="memberdata.name as memberdata.name for (id,memberdata) in members"><option></option></select>
 					<button ng-click="team.players.splice(ind,1)">Delete Player</button>
 				</td>
 			</tr></table>

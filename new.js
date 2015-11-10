@@ -169,6 +169,14 @@ app.controller("RoundView", function($scope, $cookies, $firebaseArray, Round){
 	
 	$scope.members = $firebaseArray(new Firebase(currFirebaseURL+"/members"));
 	
+	$(function(){
+		$(".list-table tr td input").keypress(function(e){
+			if(e.keyCode == 37);	//left
+			if(e.keyCode == 38);	//up
+			if(e.keyCode == 39);	//right
+			if(e.keyCode == 40);	//down
+		});
+	});
 	
 	var v = getUrlVars();
 	if(v.hasOwnProperty("id") && v["id"] !== undefined && v["id"] !== "")

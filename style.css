@@ -66,4 +66,12 @@ a.linkbox:hover{
 
 fieldset legend{font-weight:bold;text-align:center;}
 
-
+#teamdisplay{
+	padding:50px;
+	text-align:center;
+}
+#teamdisplay input, #teamdisplay select{
+	color: white;
+	background-color: black;
+	font-weight: bold;
+}
